@@ -17,12 +17,9 @@ const Colores = () => {
   
   const { loading, error  }= useColoresStore();
 
-
   const handleShowForm = () => {
     setShowForm(!showForm);
   };
-
-
 
   const [createColor] = useMutation(CREATE_COLORS, {
     onCompleted: (data) => {
