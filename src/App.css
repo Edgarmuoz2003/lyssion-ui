@@ -1,0 +1,27 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+.productos_header{
+    display: flex;
+    justify-content: end;
+    background-color: blue;
+}
+
+.input-icon {
+  position: relative;
+  display: inline-block;
+}
+
+.input-icon input {
+  padding-left: 32px; /* Espacio para el icono */
+}
+
+.icono-buscar {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  pointer-events: none;
+}
