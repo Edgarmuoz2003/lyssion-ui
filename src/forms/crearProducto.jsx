@@ -9,7 +9,7 @@ import {
 } from "../graphql/queries/productQueries";
 import { IoMdAdd } from "react-icons/io";
 import { CREATE_PRODUCTS } from "../graphql/mutations/productMutatios";
-import { useProductsStore } from "../store/useProductsStore";
+import { useMainStore } from "../store/useMainStore";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 
 const ModalCrear = ({ handleClose, show }) => {
@@ -42,7 +42,7 @@ const ModalCrear = ({ handleClose, show }) => {
     error: categoriasError,
   } = useQuery(GET_CATEGORIAS);
 
-  const addProducto = useProductsStore((state) => state.addProducto);
+  const addProducto = useMainStore((state) => state.addProducto);
 
   const [createProducto] = useMutation(CREATE_PRODUCTS, {
     onCompleted: (data) => {

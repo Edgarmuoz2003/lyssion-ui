@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { GET_COLORS } from "../graphql/queries/productQueries";
-import { useProductsStore } from "../store/useProductsStore";
+import { useMainStore } from "../store/useMainStore";
 
 export function useColoresStore() {
-  const setColores = useProductsStore((state) => state.setColores);
+  const setColores = useMainStore((state) => state.setColores);
   const { data, loading, error } = useQuery(GET_COLORS);
 
   useEffect(() => {

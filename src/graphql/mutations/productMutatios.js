@@ -26,3 +26,32 @@ export const DELETE_COLORS = gql`
     deleteColor(id: $id) 
   }
 `;
+
+export const CREATE_TALLAS = gql`
+  mutation CreateTallas($nombre: String!) {
+    createTalla(nombre: $nombre) {
+      id
+      nombre
+    }
+  }
+`;
+
+export const DELETE_TALLAS = gql`
+  mutation DeleteTallas($id: ID!) {
+    deleteTalla(id: $id) 
+  }
+`;
+
+export const CREATE_CATEGORIAS = gql`
+  mutation CreateCategorias($nombre: String!) {
+    createCategoria(nombre: $nombre) {
+      id
+      nombre
+    }
+  }
+`;
+export const DELETE_CATEGORIAS = gql`
+  mutation DeleteCategorias($id: ID!) {
+    deleteCategoria(id: $id) 
+  }
+`;

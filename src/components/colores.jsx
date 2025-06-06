@@ -4,16 +4,16 @@ import { Container, Button, Form, Card } from "react-bootstrap";
 import { useMutation } from "@apollo/client";
 import { CREATE_COLORS, DELETE_COLORS } from "../graphql/mutations/productMutatios";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
-import { useProductsStore } from "../store/useProductsStore";
+import { useMainStore } from "../store/useMainStore";
 import { useColoresStore } from "../utils/useColoresStore";
 
 const Colores = () => {
   const [codigo_hex, setCodigo_hex_] = useState("#000000");
   const [nombre, setNombre_] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const addColor = useProductsStore((state) => state.addColor);
-  const delColor = useProductsStore((state) => state.delColor);
-  const colores = useProductsStore((state) => state.colores);
+  const addColor = useMainStore((state) => state.addColor);
+  const delColor = useMainStore((state) => state.delColor);
+  const colores = useMainStore((state) => state.colores);
   
   const { loading, error  }= useColoresStore();
 
