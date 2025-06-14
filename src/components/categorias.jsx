@@ -11,11 +11,12 @@ import { Button, Card, Container, Form } from "react-bootstrap";
 import { IoMdAdd } from "react-icons/io";
 
 const Categorias = () => {
-  const [nombre, setNombre_] = useState("");
+  const [nombre, setNombre] = useState("");
   const [showForm, setShowForm] = useState(false);
   const addCategoria = useMainStore((state) => state.addCategoria);
   const delCategoria = useMainStore((state) => state.delCategoria);
   const categorias = useMainStore((state) => state.categorias);
+  console.log("esto lelga en categorias", categorias)
 
   const { loading, error } = useCategoriasStore();
 
@@ -28,7 +29,7 @@ const Categorias = () => {
       if (data.createCategoria) {
         addCategoria(data.createCategoria);
         mostrarExito("categoria agregada correctamente");
-        setNombre_("");
+        setNombre("");
       }
     },
     onError: (error) => {
@@ -101,7 +102,7 @@ const Categorias = () => {
                       type="text"
                       placeholder="Ingrese la categoria"
                       value={nombre}
-                      onChange={(e) => setNombre_(e.target.value)}
+                      onChange={(e) => setNombre(e.target.value)}
                     />
                   </Form.Group>
                   <Button variant="primary" type="submit">

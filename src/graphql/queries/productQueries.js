@@ -55,3 +55,13 @@ export const GET_PRODUCTOS = gql`
     }
   }
 `;
+
+export const GET_USUARIO = gql`
+  query GetUsuarios {
+    usuarios {
+      id
+      nombre
+      email
+    }
+  }
+`;

@@ -23,7 +23,7 @@ export const CREATE_COLORS = gql`
 
 export const DELETE_COLORS = gql`
   mutation DeleteColors($id: ID!) {
-    deleteColor(id: $id) 
+    deleteColor(id: $id)
   }
 `;
 
@@ -36,9 +36,19 @@ export const CREATE_TALLAS = gql`
   }
 `;
 
+export const CREATE_USUARIO = gql`
+  mutation CreateUsuarios($input: UsuarioInput!) {
+    createUsuario(input: $input) {
+      id
+      nombre
+      email
+    }
+  }
+`;
+
 export const DELETE_TALLAS = gql`
   mutation DeleteTallas($id: ID!) {
-    deleteTalla(id: $id) 
+    deleteTalla(id: $id)
   }
 `;
 
@@ -52,6 +62,24 @@ export const CREATE_CATEGORIAS = gql`
 `;
 export const DELETE_CATEGORIAS = gql`
   mutation DeleteCategorias($id: ID!) {
-    deleteCategoria(id: $id) 
+    deleteCategoria(id: $id)
+  }
+`;
+
+export const DELETE_USUARIO = gql`
+  mutation DeleteUsuarios($id: ID!) {
+    deleteUsuario(id: $id)
+  }
+`;
+
+export const MAKE_LOGIN = gql`
+  mutation makeLokin($data: inputLogin!) {
+    login(data: $data) {
+      user {
+        nombre
+        email
+      }
+      token
+    }
   }
 `;

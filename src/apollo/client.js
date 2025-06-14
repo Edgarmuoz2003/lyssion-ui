@@ -1,14 +1,27 @@
-import { ApolloClient, InMemoryCache } from "@apollo/client";
+import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
 import { createUploadLink } from "apollo-upload-client";
 
+// Este link agrega el token a los headers
+const authLink = new ApolloLink((operation, forward) => {
+  const token = localStorage.getItem("token");
+
+  operation.setContext(({ headers = {} }) => ({
+    headers: {
+      ...headers,
+      Authorization: token ? `Bearer ${token}` : "",
+      "x-apollo-operation-name": operation.operationName || "unknown",
+    },
+  }));
+
+  return forward(operation);
+});
+
+const uploadLink = createUploadLink({
+  uri: import.meta.env.VITE_GRAPHQL_API_URL,
+});
 
 export const client = new ApolloClient({
-  link: createUploadLink({
-    uri: import.meta.env.VITE_GRAPHQL_API_URL, 
-     headers: {
-      "x-apollo-operation-name": "upload", // Puedes poner cualquier valor no vacío
-    },
-  }),
+  link: authLink.concat(uploadLink),
   cache: new InMemoryCache(),
   connectToDevTools: true,
 });
