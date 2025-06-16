@@ -2,6 +2,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Productos from "./components/productos";
 import Colores from "./components/colores";
 import Categorias from "./components/categorias";
+import Pijamas from "./components/pijamas";
+import Casual from "./components/casual";
+import Deportiva from "./components/deportiva";
 import Header from "./layouts/header";
 import Footer from "./layouts/footer";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -37,6 +40,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/Login" element={<Login />} />
+          <Route path="/Pijamas" element={<Pijamas />}/>
+          <Route path="/Casual" element={<Casual />}/>
+          <Route path="/Deportiva" element={<Deportiva />}/>
           <Route path="/Productos" element={ <PrivateRoute><Productos /></PrivateRoute> } />
           <Route path="/Colores" element={<PrivateRoute><Colores /></PrivateRoute>} />
           <Route path="/Tallas" element={<PrivateRoute><Tallas /></PrivateRoute>} />

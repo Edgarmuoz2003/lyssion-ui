@@ -33,8 +33,10 @@ const handleLogin = () => {
           </Navbar.Brand>
           <Nav className="me-auto">
             <Nav.Link href="/">Home</Nav.Link>
-            <Nav.Link href="#features">Features</Nav.Link>
-            <Nav.Link href="#pricing">Pricing</Nav.Link>
+            <Nav.Link href="/Pijamas">Pijamas</Nav.Link>
+            <Nav.Link href="/Casual">Casual</Nav.Link>
+            <Nav.Link href="/Desportiva">Deportiva</Nav.Link>
+            <Nav.Link href="#about">Nosotros</Nav.Link>
             {isAuthenticated && (
               <Nav.Link href="/Productos">Configuraciones</Nav.Link>
             )}
