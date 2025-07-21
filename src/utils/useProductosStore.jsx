@@ -5,7 +5,9 @@ import { GET_PRODUCTOS } from "../graphql/queries/productQueries";
 
 export function useProductosStore() {
   const setProductos = useMainStore((state) => state.setProductos);
-  const { data, loading, error } = useQuery(GET_PRODUCTOS);
+  const { data, loading, error } = useQuery(GET_PRODUCTOS, {
+    variables: { where: {} }, 
+  });
 
   useEffect(() => {
     if (data?.productos) {

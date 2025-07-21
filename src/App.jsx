@@ -21,6 +21,7 @@ import Login from "./components/login";
 import { useLogindata } from "./utils/useLoginData";
 import { PrivateRoute } from "./utils/privateRoutes";
 import Home from "./components/home";
+import Detalle from "./components/detalle";
 
 
 
@@ -43,6 +44,7 @@ function App() {
           <Route path="/Pijamas" element={<Pijamas />}/>
           <Route path="/Casual" element={<Casual />}/>
           <Route path="/Deportiva" element={<Deportiva />}/>
+          <Route path="/detalles/:id" element={<Detalle />} />
           <Route path="/Productos" element={ <PrivateRoute><Productos /></PrivateRoute> } />
           <Route path="/Colores" element={<PrivateRoute><Colores /></PrivateRoute>} />
           <Route path="/Tallas" element={<PrivateRoute><Tallas /></PrivateRoute>} />
@@ -56,5 +58,3 @@ function App() {
 }
 
 export default App;
-
-

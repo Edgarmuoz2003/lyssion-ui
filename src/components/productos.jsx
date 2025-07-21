@@ -1,18 +1,43 @@
 import { Container, Button, Dropdown, Row, Col } from "react-bootstrap";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { FaCog, FaSearch } from "react-icons/fa";
 import ModalCrear from "../forms/crearProducto";
 import { useMainStore } from "../store/useMainStore";
 import ProductCard from "../layouts/poducto";
+import { useQuery } from "@apollo/client";
+import { GET_PRODUCTOS } from "../graphql/queries/productQueries";
 
 const Productos = () => {
   const [show, setShow] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const productos = useMainStore((state) => state.productos);
+  const productosIniciales = useMainStore((state) => state.productos);
+
+  // Hook para el debouncing
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // Espera 500ms después de que el usuario deja de escribir
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [searchTerm]);
+
+  // Hook de Apollo para buscar productos
+  const { data, loading, error } = useQuery(GET_PRODUCTOS, {
+    variables: {
+      where: { nombre: { $iLike: `%${debouncedSearchTerm}%` } },
+    },
+    skip: !debouncedSearchTerm, // No ejecutar la query si no hay término de búsqueda
+  });
+
+  const productos = debouncedSearchTerm ? data?.productos || [] : productosIniciales;
 
   return (
     <>
@@ -32,7 +57,12 @@ const Productos = () => {
           </Dropdown>
           <div className="input-icon">
             <FaSearch size={18} className="icono-buscar" />
-            <input type="text" placeholder="Buscar..." />
+            <input
+              type="text"
+              placeholder="Buscar por nombre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
           <Button onClick={handleShow}>
             <IoMdAdd size={22} /> Crear
@@ -42,16 +72,18 @@ const Productos = () => {
       </Container>
 
       <Container className="productos_container">
-        {productos.length > 0 ? (
+        {loading && <p>Buscando...</p>}
+        {error && <p>Error en la búsqueda: {error.message}</p>}
+        {!loading && !error && productos.length > 0 ? (
           <Row>
             {productos.map((producto) => (
-              <Col key={producto.id} sm={12} md={6} lg={4} xl={3} className="mt-5"> 
+              <Col key={producto.id} sm={12} md={6} lg={4} xl={3} className="mt-5">
                 <ProductCard producto={producto} />
               </Col>
             ))}
           </Row>
         ) : (
-          <p>No hay productos disponibles.</p>
+          !loading && <p>No se encontraron productos.</p>
         )}
       </Container>
     </>

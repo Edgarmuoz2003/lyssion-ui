@@ -1,5 +1,5 @@
 import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
-import { createUploadLink } from "apollo-upload-client";
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs"
 
 // Este link agrega el token a los headers
 const authLink = new ApolloLink((operation, forward) => {
