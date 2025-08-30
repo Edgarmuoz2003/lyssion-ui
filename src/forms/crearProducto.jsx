@@ -1,14 +1,15 @@
-import { useMutation, useQuery } from "@apollo/client";
-import { useState } from "react";
-import { Button, Modal, Form } from "react-bootstrap";
+import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
+import { useState, useMemo } from "react";
+import { Button, Modal, Form, Row, Col, Image } from "react-bootstrap";
 import Select from "react-select";
 import {
   GET_COLORS,
   GET_TALLAS,
   GET_CATEGORIAS,
+  GET_PRODUCTOS,
 } from "../graphql/queries/productQueries";
 import { IoMdAdd } from "react-icons/io";
-import { CREATE_PRODUCTS } from "../graphql/mutations/productMutatios";
+import { CREATE_PRODUCTS } from "../graphql/mutations/productMutatios"; // Asegúrate que el path sea correcto
 import { useMainStore } from "../store/useMainStore";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 
@@ -42,20 +43,34 @@ const ModalCrear = ({ handleClose, show }) => {
     error: categoriasError,
   } = useQuery(GET_CATEGORIAS);
 
-  const addProducto = useMainStore((state) => state.addProducto);
+  // 1. Obtenemos la acción para REEMPLAZAR la lista de productos en Zustand.
+  const setProductos = useMainStore((state) => state.setProductos);
+
+  // 2. Preparamos una "lazy query" para poder refrescar la lista de productos cuando la necesitemos.
+  const [refrescarProductos, { loading: cargandoProductos }] = useLazyQuery(
+    GET_PRODUCTOS,
+    {
+      fetchPolicy: "network-only", // ¡MUY IMPORTANTE! No usar el caché para esto.
+      onCompleted: (data) => {
+        // 4. Cuando la lista se refresca, la guardamos en Zustand.
+        setProductos(data.productos);
+        mostrarExito("Producto creado y lista actualizada.");
+        handleClose(); // Cerramos el modal solo después de que todo esté actualizado.
+      },
+      onError: (error) => {
+        mostrarError("Producto creado, pero falló al refrescar la lista.", error.message);
+        handleClose();
+      },
+    }
+  );
 
   const [createProducto] = useMutation(CREATE_PRODUCTS, {
     onCompleted: (data) => {
-      if (data?.createProducto) {
-        addProducto(data.createProducto);
-        mostrarExito("Producto creado exitosamente");
-        handleClose();
-      }
+      // 3. Cuando el producto se crea, llamamos a la query para refrescar la lista completa.
+      refrescarProductos();
     },
-
     onError: (error) => {
       mostrarError("Error al crear el producto", error.message);
-      throw new Error("Error al crear el producto: " + error.message);
     },
   });
 
@@ -122,26 +137,27 @@ const ModalCrear = ({ handleClose, show }) => {
   );
 
   const handleAddImages = () => {
-    console.log("Si se ejecuta el handleAddImages");
-    setColoIds((prev) => [...prev, selectedColor.value]);
-    setColorsToview((prev) => [...prev, newColor]);
-
+    // 4. CORRECCIÓN: Se define `newColor` antes de usarlo.
     const newColor = {
       nombre: selectedColor.label,
       codigo_hex: selectedColor.color,
     };
 
-    for (const image of selectedImagenes) {
-      const colorId = selectedColor ? selectedColor.value : null;
-      const archivo = image;
-      setImagenes((prev) => [...prev, { colorId, archivo }]);
-    }
+    setColoIds((prev) => [...prev, selectedColor.value]);
+    setColorsToview((prev) => [...prev, newColor]);
+
+    const newImages = selectedImagenes.map((file) => ({
+      colorId: selectedColor.value,
+      archivo: file,
+    }));
+
+    setImagenes((prev) => [...prev, ...newImages]);
 
     setSelectedImagenes([]);
     setSelectedColor(null);
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
 
     const input = {
@@ -157,14 +173,10 @@ const ModalCrear = ({ handleClose, show }) => {
       })),
     };
 
-    try {
-      await createProducto({
-        variables: { input },
-      });
-      handleClose();
-    } catch (error) {
-      throw new Error("Error al crear el producto: " + error.message);
-    }
+    // 5. SIMPLIFICACIÓN: La lógica de éxito/error ya está en `useMutation`.
+    createProducto({
+      variables: { input },
+    });
   };
 
   return (

@@ -60,4 +60,9 @@ export const useMainStore = create((set) => ({
     set((state) => ({
       usuarios: state.usuarios.filter((usuario) => usuario.id !== id),
     })),
-}));
+   delProducto: (id) =>
+    set((state) => ({
+      productos: state.productos.filter((producto) => producto.id !== id),
+    })),
+  }));
+ 

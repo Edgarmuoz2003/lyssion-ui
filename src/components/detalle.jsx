@@ -1,5 +1,5 @@
-import { useParams } from "react-router-dom";
-import { useQuery } from "@apollo/client";
+import { Navigate, useParams } from "react-router-dom";
+import { useMutation, useQuery } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { Container, Row, Col, Spinner, Button } from "react-bootstrap";
 import { GET_PRODUCTOS } from "../graphql/queries/productQueries";
@@ -14,20 +14,42 @@ import {
 } from "react-icons/fa";
 import { MdIron } from "react-icons/md";
 import { BsCircleFill } from "react-icons/bs";
+import { mostrarError, mostrarExito } from "../utils/hookMensajes";
+import { useNavigate } from "react-router-dom";
+import { useLogindata } from "../utils/useLoginData";
+import { DELETE_PRODUCTS } from "../graphql/mutations/productMutatios";
+import { useMainStore } from "../store/useMainStore";
 
 const Detalle = () => {
   const { id } = useParams();
+  const { isAuthenticated } = useLogindata();
+  const { delProducto } = useMainStore();
 
-    // Estados para manejar el color y la imagen seleccionados
+  // Estados para manejar el color y la imagen seleccionados
   const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedTalla, setSelectedTalla] = useState(null);
+  const [cantidad, setCantidad] = useState(1);
+  const [productsOnKart, setProductsOnKart] = useState(false);
   const [mainImage, setMainImage] = useState(null);
+  const navigate = useNavigate();
 
   // Carga de datos del producto con Apollo Client
   const { data, loading, error } = useQuery(GET_PRODUCTOS, {
     variables: {
       where: { id: parseInt(id, 10) }, // Aseguramos que el ID sea un número
     },
-    fetchPolicy: "cache-and-network", // Buena política para páginas de detalle
+    fetchPolicy: "cache-and-network", 
+  });
+
+  const [deleteProduct] = useMutation(DELETE_PRODUCTS, { 
+    onCompleted: () => {
+      mostrarExito("Producto eliminado con éxito");
+      navigate("/productos");
+    },
+    onError: (error) => {
+      mostrarError("Error al eliminar el producto");
+      console.error(error);
+    },
   });
 
   // Extraemos el producto del array que devuelve la query
@@ -48,6 +70,23 @@ const Detalle = () => {
     }
   }, [producto]);
 
+  useEffect(() => {
+    if (localStorage.getItem("kartProducts")) {
+      try {
+        const products = JSON.parse(localStorage.getItem("kartProducts"));
+        if (Array.isArray(products) && products.length > 0) {
+          setProductsOnKart(true);
+        }
+      } catch (e) {
+        console.error(
+          "Error al parsear los productos del carrito desde localStorage",
+          e
+        );
+        setProductsOnKart(false);
+      }
+    }
+  }, []);
+
   // Manejador para cambiar de color y actualizar las imágenes
   const handleColorClick = (color) => {
     setSelectedColor(color);
@@ -55,6 +94,72 @@ const Detalle = () => {
       (img) => img.color?.id === color.id
     );
     setMainImage(newMainImage);
+  };
+
+  const handleTallaClick = (talla) => {
+    setSelectedTalla(talla);
+  };
+
+  const handleCantidadChange = (event) => {
+    setCantidad(event.target.value);
+  };
+
+  const handleDelete = (productoId) => {
+    deleteProduct({ variables: { id: productoId } });
+    delProducto(productoId);
+  };
+
+  const validateInputs = () => {
+    if (!selectedColor) {
+      mostrarError("Debes seleccionar un color");
+      return false;
+    }
+    if (!selectedTalla) {
+      mostrarError("Debes seleccionar una talla");
+      return false;
+    }
+    if (cantidad <= 0) {
+      mostrarError("La cantidad debe ser al menos 1");
+      return false;
+    }
+    return true;
+  };
+
+  const handleKartClick = () => {
+    if (!validateInputs()) return;
+
+    const kartData = localStorage.getItem("kartProducts");
+    const existingProducts = kartData ? JSON.parse(kartData) : [];
+
+    const newProduct = {
+      nombre: producto?.nombre,
+      precio: producto?.precio,
+      color: selectedColor?.nombre,
+      talla: selectedTalla?.nombre,
+      imagen: mainImage?.url,
+      cantidad: parseInt(cantidad, 10),
+    };
+
+    // Verificamos si el producto ya existe (por nombre, talla y color)
+    const existingIndex = existingProducts.findIndex(
+      (p) =>
+        p.nombre === newProduct.nombre &&
+        p.color === newProduct.color &&
+        p.talla === newProduct.talla
+    );
+
+    if (existingIndex !== -1) {
+      // Si ya existe, sumamos la cantidad
+      existingProducts[existingIndex].cantidad += newProduct.cantidad;
+    } else {
+      // Si no existe, lo agregamos
+      existingProducts.push(newProduct);
+    }
+
+    localStorage.setItem("kartProducts", JSON.stringify(existingProducts));
+    setProductsOnKart(true);
+    window.dispatchEvent(new Event("kartUpdated")); // Notifica al botón del carrito
+    mostrarExito("Producto añadido al carrito con éxito");
   };
 
   // Renderizado de estados de carga y error
@@ -68,8 +173,12 @@ const Detalle = () => {
     );
   }
 
-  if (error) return <p className="text-center text-danger mt-5">Error: {error.message}</p>;
-  if (!producto) return <p className="text-center mt-5">Producto no encontrado.</p>;
+  if (error)
+    return (
+      <p className="text-center text-danger mt-5">Error: {error.message}</p>
+    );
+  if (!producto)
+    return <p className="text-center mt-5">Producto no encontrado.</p>;
 
   // Filtramos las miniaturas según el color seleccionado
   const thumbnails =
@@ -93,11 +202,14 @@ const Detalle = () => {
               className="img-fluid detail-thumbnail"
               style={{
                 cursor: "pointer",
-                border: mainImage?.id === img.id ? "2px solid black" : "2px solid #eee",
+                border:
+                  mainImage?.id === img.id
+                    ? "2px solid black"
+                    : "2px solid #eee",
                 width: "80px",
                 height: "100px",
                 objectFit: "cover",
-                borderRadius: '4px'
+                borderRadius: "4px",
               }}
               onClick={() => setMainImage(img)}
             />
@@ -113,9 +225,22 @@ const Detalle = () => {
               className="img-fluid detail-main-image"
             />
           ) : (
-            <div className="d-flex justify-content-center align-items-center" style={{ height: '100%', minHeight: '400px', backgroundColor: '#f8f9fa' }}>
+            <div
+              className="d-flex justify-content-center align-items-center"
+              style={{
+                height: "100%",
+                minHeight: "400px",
+                backgroundColor: "#f8f9fa",
+              }}
+            >
               <span className="text-muted">No hay imagen para este color</span>
             </div>
+          )}
+
+          {isAuthenticated && (
+            <Button onClick={() => handleDelete(producto.id)} className="mt-3">
+              Eliminar
+            </Button>
           )}
         </Col>
 
@@ -147,8 +272,15 @@ const Detalle = () => {
                   className="color-swatch"
                   style={{
                     color: color.codigo_hex,
-                    outline: selectedColor?.id === color.id ? `2px solid black` : `1px solid ${color.codigo_hex === '#FFFFFF' ? '#ccc' : 'transparent'}`,
-                    outlineOffset: '2px'
+                    outline:
+                      selectedColor?.id === color.id
+                        ? `2px solid black`
+                        : `1px solid ${
+                            color.codigo_hex === "#FFFFFF"
+                              ? "#ccc"
+                              : "transparent"
+                          }`,
+                    outlineOffset: "2px",
                   }}
                   onClick={() => handleColorClick(color)}
                   title={color.nombre}
@@ -166,7 +298,20 @@ const Detalle = () => {
             </p>
             <div className="d-flex gap-2 flex-wrap">
               {producto.tallas.map((talla) => (
-                <span key={talla.id} className="talla-badge">
+                <span
+                  key={talla.id}
+                  className="talla-badge"
+                  style={{
+                    padding: "0.5rem 1rem",
+                    border:
+                      selectedTalla?.id === talla.id
+                        ? "2px solid black"
+                        : "1px solid #eee",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => handleTallaClick(talla)}
+                >
                   {talla.nombre}
                 </span>
               ))}
@@ -174,6 +319,20 @@ const Detalle = () => {
           </div>
 
           <hr />
+
+          {/* Cantidad */}
+          <div>
+            <p>
+              <strong>Cantidad:</strong>
+            </p>
+            <input
+              type="number"
+              min="1"
+              value={cantidad}
+              onChange={handleCantidadChange}
+              style={{ width: "50px" }}
+            />
+          </div>
 
           {/* Recomendaciones de cuidado */}
           <div>
@@ -220,9 +379,14 @@ const Detalle = () => {
 
           {/* Botón añadir al carrito */}
           <div className="d-grid gap-2 mt-4">
-            <Button variant="dark" size="lg">
+            <Button variant="dark" size="lg" onClick={handleKartClick}>
               🛒 Añadir al carrito
             </Button>
+          </div>
+          <div className="d-grid gap-2 mt-4">
+            {productsOnKart && (
+              <Button onClick={() => navigate(-1)}>Seguir Comprando</Button>
+            )}
           </div>
         </Col>
       </Row>

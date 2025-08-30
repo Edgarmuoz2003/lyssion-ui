@@ -1,43 +1,32 @@
 import { Container, Button, Dropdown, Row, Col } from "react-bootstrap";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { FaCog, FaSearch } from "react-icons/fa";
 import ModalCrear from "../forms/crearProducto";
 import { useMainStore } from "../store/useMainStore";
 import ProductCard from "../layouts/poducto";
-import { useQuery } from "@apollo/client";
-import { GET_PRODUCTOS } from "../graphql/queries/productQueries";
 
 const Productos = () => {
   const [show, setShow] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const productosIniciales = useMainStore((state) => state.productos);
+  // 1. Obtenemos la lista completa de productos desde Zustand.
+  const todosLosProductos = useMainStore((state) => state.productos);
 
-  // Hook para el debouncing
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500); // Espera 500ms después de que el usuario deja de escribir
+  // 2. Filtramos la lista de productos en el cliente cada vez que el término de búsqueda o la lista cambian.
+  // `useMemo` optimiza para que el filtrado no se ejecute en cada render, solo cuando es necesario.
+  const productosFiltrados = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return todosLosProductos;
+    }
+    return todosLosProductos.filter((producto) =>
+      producto.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, todosLosProductos]);
 
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [searchTerm]);
-
-  // Hook de Apollo para buscar productos
-  const { data, loading, error } = useQuery(GET_PRODUCTOS, {
-    variables: {
-      where: { nombre: { $iLike: `%${debouncedSearchTerm}%` } },
-    },
-    skip: !debouncedSearchTerm, // No ejecutar la query si no hay término de búsqueda
-  });
-
-  const productos = debouncedSearchTerm ? data?.productos || [] : productosIniciales;
 
   return (
     <>
@@ -51,8 +40,8 @@ const Productos = () => {
             <Dropdown.Menu>
               <Dropdown.Item href="/Colores">Colores</Dropdown.Item>
               <Dropdown.Item href="/Tallas">Tallas</Dropdown.Item>
-              <Dropdown.Item href="/Categorias">Categorias</Dropdown.Item>
-              <Dropdown.Item href="/Usuarios">Categorias</Dropdown.Item>
+              <Dropdown.Item href="/Categorias">Categorías</Dropdown.Item>
+              <Dropdown.Item href="/Usuarios">Usuarios</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
           <div className="input-icon">
@@ -72,18 +61,16 @@ const Productos = () => {
       </Container>
 
       <Container className="productos_container">
-        {loading && <p>Buscando...</p>}
-        {error && <p>Error en la búsqueda: {error.message}</p>}
-        {!loading && !error && productos.length > 0 ? (
+        {productosFiltrados.length > 0 ? (
           <Row>
-            {productos.map((producto) => (
+            {productosFiltrados.map((producto) => (
               <Col key={producto.id} sm={12} md={6} lg={4} xl={3} className="mt-5">
                 <ProductCard producto={producto} />
               </Col>
             ))}
           </Row>
         ) : (
-          !loading && <p>No se encontraron productos.</p>
+          <p>No se encontraron productos.</p>
         )}
       </Container>
     </>

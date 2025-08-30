@@ -11,6 +11,12 @@ export const CREATE_PRODUCTS = gql`
   }
 `;
 
+export const DELETE_PRODUCTS = gql`
+  mutation DeleteProducts($id: ID!) {
+    deleteProducto(id: $id)
+  }
+`;
+
 export const CREATE_COLORS = gql`
   mutation CreateColors($nombre: String!, $codigo_hex: String!) {
     createColor(nombre: $nombre, codigo_hex: $codigo_hex) {
@@ -80,6 +86,21 @@ export const MAKE_LOGIN = gql`
         email
       }
       token
+    }
+  }
+`;
+
+export const CREATE_CLIENTE = gql`
+  mutation createUsuario($input: ClienteInput!) {
+    createCliente(input: $input) {
+      nombre
+      apellido
+      documento
+      email
+      direccion
+      telefono
+      departamento
+      ciudad
     }
   }
 `;

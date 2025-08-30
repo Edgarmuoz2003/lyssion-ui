@@ -22,8 +22,9 @@ import { useLogindata } from "./utils/useLoginData";
 import { PrivateRoute } from "./utils/privateRoutes";
 import Home from "./components/home";
 import Detalle from "./components/detalle";
-
-
+import KartButton from "./layouts/kartButton";
+import Carrito from "./components/carrito";
+import Pedido from "./components/pedido";
 
 function App() {
  useColoresStore();
@@ -38,6 +39,7 @@ function App() {
       <ToastContainer position="bottom-right" />
       <Router>
         <Header />
+        <KartButton />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/Login" element={<Login />} />
@@ -45,6 +47,8 @@ function App() {
           <Route path="/Casual" element={<Casual />}/>
           <Route path="/Deportiva" element={<Deportiva />}/>
           <Route path="/detalles/:id" element={<Detalle />} />
+          <Route path="/carrito" element={<Carrito />} />
+          <Route path="/pedido" element={<Pedido />} />
           <Route path="/Productos" element={ <PrivateRoute><Productos /></PrivateRoute> } />
           <Route path="/Colores" element={<PrivateRoute><Colores /></PrivateRoute>} />
           <Route path="/Tallas" element={<PrivateRoute><Tallas /></PrivateRoute>} />

@@ -345,3 +345,10 @@ body {
 .breadcrumb-text {
   font-size: 0.9rem;
 }
+
+.formulario-Pedido {
+  margin: 5px;
+  min-width: 250px;
+  max-width: 600px;
+  flex: 1;
+}

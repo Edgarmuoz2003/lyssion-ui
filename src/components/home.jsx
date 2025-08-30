@@ -8,7 +8,8 @@ import Marquee from "react-fast-marquee";
 import { GET_ULTIMOS_PRODUCTOS } from "../graphql/queries/productQueries";
 import { useQuery } from "@apollo/client";
 import ProductCard from "../layouts/poducto";
-import { ShieldCheck, Truck, Award, Star } from 'react-bootstrap-icons';
+import { Star } from 'react-bootstrap-icons';
+import ValoresLyssion from "../layouts/valoresLyssion";
 
 const Home = () => {
   const { data, loading, error } = useQuery(GET_ULTIMOS_PRODUCTOS);
@@ -26,27 +27,9 @@ const Home = () => {
       </section>
 
       {/* SECCIÓN 1: PROPUESTA DE VALOR */}
-      <section className="section-valor-home py-5 bg-light">
-        <Container>
-          <Row className="text-center">
-            <Col md={4} className="mb-3">
-              <Truck size={40} className="mb-2 text-primary" />
-              <h4>Envíos a todo el país</h4>
-              <p className="text-muted">Recibe tus productos en la puerta de tu casa, sin importar dónde estés.</p>
-            </Col>
-            <Col md={4} className="mb-3">
-              <ShieldCheck size={40} className="mb-2 text-primary" />
-              <h4>Pagos Seguros</h4>
-              <p className="text-muted">Utilizamos las mejores plataformas para proteger tu información.</p>
-            </Col>
-            <Col md={4} className="mb-3">
-              <Award size={40} className="mb-2 text-primary" />
-              <h4>Calidad Garantizada</h4>
-              <p className="text-muted">Prendas confeccionadas con los mejores materiales y atención al detalle.</p>
-            </Col>
-          </Row>
-        </Container>
-      </section>
+      <ValoresLyssion />
+
+      {/* SECCIÓN 2: CATEGORIAS */}
 
       <section className="section-categorias-home">
         <h1 className="titulo-home-inicio">Nuestras Categorias</h1>

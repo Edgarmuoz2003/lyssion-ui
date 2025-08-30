@@ -131,3 +131,33 @@ export const GET_USUARIO = gql`
     }
   }
 `;
+
+export const GET_CLIENTES = gql`
+  query GetClientes($where: JSON) {
+    clientes(where: $where) {
+      nombre
+      apellido
+      documento
+      direccion
+      telefono
+      email
+      departamento
+      ciudad
+    }
+  }
+`;
+
+export const GET_CLIENTE = gql`
+  query GetCliente($id: ID!) {
+    cliente(id: $id) {
+      nombre
+      apellido
+      documento
+      direccion
+      telefono
+      email
+      departamento
+      ciudad
+    }
+  }
+`;
