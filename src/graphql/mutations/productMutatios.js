@@ -93,6 +93,7 @@ export const MAKE_LOGIN = gql`
 export const CREATE_CLIENTE = gql`
   mutation createUsuario($input: ClienteInput!) {
     createCliente(input: $input) {
+      id
       nombre
       apellido
       documento
@@ -101,6 +102,37 @@ export const CREATE_CLIENTE = gql`
       telefono
       departamento
       ciudad
+    }
+  }
+`;
+
+export const CREATE_PEDIDO = gql`
+  mutation createOrden($input: OrdenInput!) {
+    createOrden(input: $input) {
+      id
+      fecha
+      total
+      estado
+      cliente {
+        id
+        nombre
+        apellido
+        documento
+        email
+        direccion
+        telefono
+        departamento
+        ciudad
+      }
+      productos {
+        id
+        precioUnitario
+        producto {
+          id
+          nombre
+          precio
+        }
+      }
     }
   }
 `;

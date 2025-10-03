@@ -34,6 +34,7 @@ const validateCliente = async (dataCliente) => {
             }
         });
         console.log('cliente creado...')
+        console.log(`${JSON.stringify(newCliente)}`)
         return newCliente.createCliente;
     }
 
@@ -44,5 +45,3 @@ const validateCliente = async (dataCliente) => {
 };
 
 export default validateCliente;
-
-

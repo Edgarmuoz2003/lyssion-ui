@@ -1,5 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import Productos from "./components/productos";
+import Productos from "./components/configuraciones";
 import Colores from "./components/colores";
 import Categorias from "./components/categorias";
 import Pijamas from "./components/pijamas";
@@ -25,6 +25,9 @@ import Detalle from "./components/detalle";
 import KartButton from "./layouts/kartButton";
 import Carrito from "./components/carrito";
 import Pedido from "./components/pedido";
+import { useOrdenesStore } from "./utils/useOrdenesStore";
+import PedidosList from "./components/pedidosList";
+import Configuraciones from "./components/configuraciones";
 
 function App() {
  useColoresStore();
@@ -33,6 +36,7 @@ function App() {
  useProductosStore();
  useUsuariosStore();
  useLogindata();
+ useOrdenesStore();
  
   return (
     <>
@@ -49,11 +53,12 @@ function App() {
           <Route path="/detalles/:id" element={<Detalle />} />
           <Route path="/carrito" element={<Carrito />} />
           <Route path="/pedido" element={<Pedido />} />
-          <Route path="/Productos" element={ <PrivateRoute><Productos /></PrivateRoute> } />
+          <Route path="/Configuraciones" element={ <PrivateRoute><Configuraciones /></PrivateRoute> } />
           <Route path="/Colores" element={<PrivateRoute><Colores /></PrivateRoute>} />
           <Route path="/Tallas" element={<PrivateRoute><Tallas /></PrivateRoute>} />
           <Route path="/Categorias" element={<PrivateRoute><Categorias /></PrivateRoute>} />
           <Route path="/Usuarios" element={<PrivateRoute><Usuarios /></PrivateRoute>} />
+          <Route path="/PedidosList" element={<PrivateRoute><PedidosList /></PrivateRoute>} />
         </Routes>
         <Footer />
       </Router>

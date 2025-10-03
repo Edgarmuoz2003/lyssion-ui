@@ -40,7 +40,7 @@ const Login = () => {
 
   useEffect(() => {
     if (token) {
-      navigate("/Productos");
+      navigate("/Configuraciones");
     }
   }, [token, navigate]);
 

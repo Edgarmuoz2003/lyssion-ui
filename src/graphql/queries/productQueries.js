@@ -135,6 +135,7 @@ export const GET_USUARIO = gql`
 export const GET_CLIENTES = gql`
   query GetClientes($where: JSON) {
     clientes(where: $where) {
+      id
       nombre
       apellido
       documento
@@ -150,6 +151,7 @@ export const GET_CLIENTES = gql`
 export const GET_CLIENTE = gql`
   query GetCliente($id: ID!) {
     cliente(id: $id) {
+      id
       nombre
       apellido
       documento
@@ -158,6 +160,34 @@ export const GET_CLIENTE = gql`
       email
       departamento
       ciudad
+    }
+  }
+`;
+
+export const GET_ORDENES = gql`
+  query GetOrdenes($where: JSON) {
+    ordenes(where: $where) {
+      id
+      numeroOrden
+      fecha
+      total
+      estado
+      cliente {
+        id
+        nombre
+        apellido
+        documento
+      }
+      productos {
+        id
+        cantidad
+        precioUnitario
+        producto {
+          id
+          nombre
+          precio
+        }
+      }
     }
   }
 `;

@@ -14,6 +14,7 @@ export const useMainStore = create((set) => ({
   categorias: [],
   usuarios: [],
   imgenFondo: null,
+  ordenes: [],
 
   setCategorias: (categorias) => set({ categorias }),
   setTallas: (tallas) => set({ tallas }),
@@ -21,8 +22,9 @@ export const useMainStore = create((set) => ({
   setProductos: (productos) => set({ productos }),
   setUsuarios: (usuarios) => set({ usuarios }),
   setImagenFondo: (imagenFondo) => set({ imagenFondo }),
-
+  setOrdenes: (ordenes) => set({ ordenes }),
   setLoginData: (loginData) => set({ loginData }),
+
   addProducto: (producto) =>
     set((state) => ({
       productos: [...state.productos, producto],
@@ -43,6 +45,11 @@ export const useMainStore = create((set) => ({
     set((state) => ({
       usuarios: [...state.usuarios, usuario],
     })),
+  addOrden: (orden) =>
+    set((state) => ({
+      ordenes: [...state.ordenes, orden],
+    })),
+  
 
   delColor: (id) =>
     set((state) => ({
@@ -63,6 +70,10 @@ export const useMainStore = create((set) => ({
    delProducto: (id) =>
     set((state) => ({
       productos: state.productos.filter((producto) => producto.id !== id),
+    })),
+  delOrden: (id) =>
+    set((state) => ({
+      ordenes: state.ordenes.filter((orden) => orden.id !== id),
     })),
   }));
  

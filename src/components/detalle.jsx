@@ -44,7 +44,7 @@ const Detalle = () => {
   const [deleteProduct] = useMutation(DELETE_PRODUCTS, { 
     onCompleted: () => {
       mostrarExito("Producto eliminado con éxito");
-      navigate("/productos");
+      navigate("/Configuraciones");
     },
     onError: (error) => {
       mostrarError("Error al eliminar el producto");
@@ -132,6 +132,7 @@ const Detalle = () => {
     const existingProducts = kartData ? JSON.parse(kartData) : [];
 
     const newProduct = {
+      id: producto?.id,
       nombre: producto?.nombre,
       precio: producto?.precio,
       color: selectedColor?.nombre,

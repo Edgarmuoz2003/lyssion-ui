@@ -6,7 +6,7 @@ import ModalCrear from "../forms/crearProducto";
 import { useMainStore } from "../store/useMainStore";
 import ProductCard from "../layouts/poducto";
 
-const Productos = () => {
+const Configuraciones = () => {
   const [show, setShow] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -42,6 +42,7 @@ const Productos = () => {
               <Dropdown.Item href="/Tallas">Tallas</Dropdown.Item>
               <Dropdown.Item href="/Categorias">Categorías</Dropdown.Item>
               <Dropdown.Item href="/Usuarios">Usuarios</Dropdown.Item>
+              <Dropdown.Item href="/PedidosList">Ordenes de pedido</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
           <div className="input-icon">
@@ -77,4 +78,4 @@ const Productos = () => {
   );
 };
 
-export default Productos;
+export default Configuraciones;
