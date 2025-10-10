@@ -14,7 +14,7 @@ export const useMainStore = create((set) => ({
   categorias: [],
   usuarios: [],
   imgenFondo: null,
-  ordenes: [],
+  ordenes: [], // ✅ Correcto, ya está inicializado como array vacío.
 
   setCategorias: (categorias) => set({ categorias }),
   setTallas: (tallas) => set({ tallas }),
@@ -49,7 +49,12 @@ export const useMainStore = create((set) => ({
     set((state) => ({
       ordenes: [...state.ordenes, orden],
     })),
-  
+  updateOrden: (updatedOrden) =>
+    set((state) => ({
+      ordenes: state.ordenes.map((orden) =>
+        orden.id === updatedOrden.id ? { ...orden, ...updatedOrden } : orden
+      ),
+    })),
 
   delColor: (id) =>
     set((state) => ({

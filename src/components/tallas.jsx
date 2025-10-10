@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { IoMdAdd } from "react-icons/io";
 import { Container, Button, Form, Card } from "react-bootstrap";
+import { IoMdAdd } from "react-icons/io";
+import { FaSave, FaTrash, FaArrowLeft } from "react-icons/fa";
 import { useMutation } from "@apollo/client";
 import { CREATE_TALLAS, DELETE_TALLAS } from "../graphql/mutations/productMutatios";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { useMainStore } from "../store/useMainStore";
 import { useTallasStore } from "../utils/useTallasStore";
+import { Link } from "react-router-dom";
 
 
 const Tallas = () => {
@@ -82,10 +84,17 @@ const Tallas = () => {
   return (
     <>
       <Container>
-        <h1 className="text-center m-5">Gestión de tallas</h1>
-        <Button onClick={handleShowForm}>
-          <IoMdAdd size={20} /> Agregar
-        </Button>
+        <div className="d-flex justify-content-between align-items-center mt-5 mb-4">
+          <div className="d-flex align-items-center">
+            <Link to="/Configuraciones" className="btn btn-light border me-3">
+              <FaArrowLeft />
+            </Link>
+            <h1 className="mb-0">Gestión de Tallas</h1>
+          </div>
+          <Button onClick={handleShowForm}>
+            <IoMdAdd size={20} /> Agregar
+          </Button>
+        </div>
         {showForm && (
           <div className="form-tallas">
             <Card className="mb-3">
@@ -104,7 +113,7 @@ const Tallas = () => {
                     />
                   </Form.Group>
                   <Button variant="primary" type="submit">
-                    Guardar Talla
+                    <FaSave /> Guardar Talla
                   </Button>
                 </Form>
               </Card.Body>
@@ -127,7 +136,7 @@ const Tallas = () => {
                     <Button 
                     variant="danger" size="sm"
                     onClick={() => handleDelete(talla.id)}>
-                      Eliminar
+                      <FaTrash />
                     </Button>
                   </td>
                   <td>{talla.nombre}</td>

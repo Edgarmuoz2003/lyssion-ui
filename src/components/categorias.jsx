@@ -9,6 +9,7 @@ import {
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { Button, Card, Container, Form } from "react-bootstrap";
 import { IoMdAdd } from "react-icons/io";
+import { FaSave, FaTrash } from "react-icons/fa";
 
 const Categorias = () => {
   const [nombre, setNombre] = useState("");
@@ -106,7 +107,7 @@ const Categorias = () => {
                     />
                   </Form.Group>
                   <Button variant="primary" type="submit">
-                    Guardar Categoria
+                    <FaSave /> Guardar Categoria
                   </Button>
                 </Form>
               </Card.Body>
@@ -131,7 +132,7 @@ const Categorias = () => {
                       size="sm"
                       onClick={() => handleDelete(categoria.id)}
                     >
-                      Eliminar
+                      <FaTrash />
                     </Button>
                   </td>
                   <td>{categoria.nombre}</td>

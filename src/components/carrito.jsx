@@ -2,6 +2,7 @@ import { Container, Button, Table, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ValoresLyssion from "../layouts/valoresLyssion";
+import { FaArrowLeft, FaTrash, FaCreditCard } from "react-icons/fa";
 
 const Carrito = () => {
     const [productKart, setProductKart] = useState(
@@ -40,7 +41,7 @@ const Carrito = () => {
                 <div className="text-center p-5">
                     <h2>No hay productos en el carrito</h2>
                     <Button variant="dark" onClick={() => navigate('/')}>
-                        Volver a la tienda
+                        <FaArrowLeft /> Volver a la tienda
                     </Button>
                 </div>
             ) : (
@@ -82,13 +83,13 @@ const Carrito = () => {
                     <Row className="mt-4 justify-content-end">
                         <Col md="auto">
                             <Button variant="secondary" onClick={() => navigate(-1)} className="me-2">
-                                Seguir comprando
+                                <FaArrowLeft /> Seguir comprando
                             </Button>
                             <Button variant="danger" onClick={resetKart} className="me-2">
-                                Vaciar carrito
+                                <FaTrash /> Vaciar carrito
                             </Button>
                             <Button variant="dark" onClick={() => navigate('/pedido')}>
-                                Realizar pedido
+                                <FaCreditCard /> Realizar pedido
                             </Button>
                         </Col>
                     </Row>

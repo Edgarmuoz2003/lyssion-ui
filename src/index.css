@@ -352,3 +352,107 @@ body {
   max-width: 600px;
   flex: 1;
 }
+
+.pedidos-number-class{
+  cursor: pointer
+}
+
+.pedidos-list-class:hover{
+  border: 2px solid rgba(0, 0, 255, 0.304);
+}
+
+.modal-pedido {
+  width: 100vw !important;
+}
+
+/* Modal personalizado */
+.modal-pedido .modal-content {
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  border: none;
+  background: #f8f9fa;
+}
+
+.modal-pedido .modal-header {
+  background: linear-gradient(90deg, #343a40 60%, #6c757d 100%);
+  color: #fff;
+  border-bottom: none;
+  border-radius: 18px 18px 0 0;
+  padding: 24px 32px;
+}
+
+.modal-pedido .modal-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.modal-pedido .modal-body {
+  padding: 32px;
+}
+
+.modal-pedido h4 {
+  margin-top: 24px;
+  font-size: 1.2rem;
+  color: #343a40;
+  font-weight: 600;
+}
+
+.modal-pedido .table {
+  margin-top: 16px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.modal-pedido .table th {
+  background: #343a40;
+  color: #fff;
+  font-weight: 500;
+  border: none;
+}
+
+.modal-pedido .table td {
+  border: none;
+  vertical-align: middle;
+}
+
+.modal-pedido .modal-footer {
+  border-top: none;
+  padding: 24px 32px;
+  background: #f8f9fa;
+  border-radius: 0 0 18px 18px;
+}
+
+.modal-pedido .btn-primary {
+  background: linear-gradient(90deg, #343a40 60%, #6c757d 100%);
+  border: none;
+  font-weight: 500;
+  padding: 8px 24px;
+  border-radius: 8px;
+}
+
+.modal-pedido .btn-secondary {
+  background: #adb5bd;
+  border: none;
+  font-weight: 500;
+  padding: 8px 24px;
+  border-radius: 8px;
+  color: #343a40;
+}
+
+.total-display-led {
+  background-color: #000;
+  color: #ffc107; /* Un tono amarillo similar al de Bootstrap */
+  font-family: 'Courier New', Courier, monospace; /* Fuente monoespaciada para el look digital */
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-align: right;
+  font-size: 1.8rem;
+  font-weight: bold;
+  border: 2px solid #333;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
+  letter-spacing: 2px;
+  display: inline-block; /* Para que el contenedor se ajuste al contenido */
+}

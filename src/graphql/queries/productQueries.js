@@ -177,11 +177,18 @@ export const GET_ORDENES = gql`
         nombre
         apellido
         documento
+        direccion
+        telefono
+        email
+        departamento
+        ciudad
       }
       productos {
         id
         cantidad
         precioUnitario
+        color
+        talla
         producto {
           id
           nombre

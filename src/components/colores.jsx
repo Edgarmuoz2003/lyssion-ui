@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { IoMdAdd } from "react-icons/io";
 import { Container, Button, Form, Card } from "react-bootstrap";
+import { IoMdAdd } from "react-icons/io";
+import { FaSave, FaTrash, FaArrowLeft } from "react-icons/fa";
 import { useMutation } from "@apollo/client";
 import { CREATE_COLORS, DELETE_COLORS } from "../graphql/mutations/productMutatios";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { useMainStore } from "../store/useMainStore";
 import { useColoresStore } from "../utils/useColoresStore";
+import { Link } from "react-router-dom";
 
 const Colores = () => {
   const [codigo_hex, setCodigo_hex_] = useState("#000000");
@@ -84,10 +86,17 @@ const Colores = () => {
   return (
     <>
       <Container>
-        <h1 className="text-center m-5">Gestión de Colores</h1>
-        <Button onClick={handleShowForm}>
-          <IoMdAdd size={20} /> Agregar
-        </Button>
+        <div className="d-flex justify-content-between align-items-center mt-5 mb-4">
+          <div className="d-flex align-items-center">
+            <Link to="/Configuraciones" className="btn btn-light border me-3">
+              <FaArrowLeft />
+            </Link>
+            <h1 className="mb-0">Gestión de Colores</h1>
+          </div>
+          <Button onClick={handleShowForm}>
+            <IoMdAdd size={20} /> Agregar
+          </Button>
+        </div>
         {showForm && (
           <div className="form-colores">
             <Card className="mb-3">
@@ -114,7 +123,7 @@ const Colores = () => {
                     />
                   </Form.Group>
                   <Button variant="primary" type="submit">
-                    Guardar Color
+                    <FaSave /> Guardar Color
                   </Button>
                 </Form>
               </Card.Body>
@@ -139,7 +148,7 @@ const Colores = () => {
                     <Button 
                     variant="danger" size="sm"
                     onClick={() => handleDelete(color.id)}>
-                      Eliminar
+                      <FaTrash />
                     </Button>
                   </td>
                   <td>

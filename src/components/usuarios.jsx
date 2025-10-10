@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Container, Button, Form, Card, InputGroup } from "react-bootstrap";
 import { useMutation } from "@apollo/client";
 import { IoMdAdd } from "react-icons/io";
-import { FaSearch, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaSearch, FaEye, FaEyeSlash, FaSave, FaTrash, FaArrowLeft } from "react-icons/fa";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { useMainStore } from "../store/useMainStore";
 import { useUsuariosStore } from "../utils/useUsuariosStore";
 import { CREATE_USUARIO, DELETE_USUARIO } from "../graphql/mutations/productMutatios";
+import { Link } from "react-router-dom";
 
 const Usuarios = () => {
   const [nombre, setNombre] = useState("");
@@ -73,14 +74,18 @@ const Usuarios = () => {
   return (
     <>
       <Container>
-        <div className="productos_header">
-          <div className="input-icon">
-            <FaSearch size={18} className="icono-buscar" />
-            <input type="text" placeholder="Buscar..." />
+        <div className="d-flex justify-content-between align-items-center mt-5 mb-4">
+          <div className="d-flex align-items-center">
+            <Link to="/Configuraciones" className="btn btn-light border me-3">
+              <FaArrowLeft />
+            </Link>
+            <h1 className="mb-0">Gestión de Usuarios</h1>
           </div>
-          <Button onClick={handleShowForm}>
-            <IoMdAdd size={22} /> Crear
-          </Button>
+          <div>
+            <Button onClick={handleShowForm}>
+              <IoMdAdd size={22} /> Crear
+            </Button>
+          </div>
         </div>
 
         {showForm && (
@@ -128,7 +133,7 @@ const Usuarios = () => {
                   </Form.Group>
 
                   <Button variant="primary" type="submit">
-                    Guardar Usuario
+                    <FaSave /> Guardar Usuario
                   </Button>
                 </Form>
               </Card.Body>
@@ -155,7 +160,7 @@ const Usuarios = () => {
                       size="sm"
                       onClick={() => handleDelete(usuario.id)}
                     >
-                      Eliminar
+                      <FaTrash />
                     </Button>
                   </td>
                   <td>{usuario.nombre}</td>
@@ -171,5 +176,3 @@ const Usuarios = () => {
 };
 
 export default Usuarios;
-
-

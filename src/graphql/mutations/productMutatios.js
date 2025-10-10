@@ -127,6 +127,9 @@ export const CREATE_PEDIDO = gql`
       productos {
         id
         precioUnitario
+        cantidad
+        color
+        talla
         producto {
           id
           nombre
@@ -134,5 +137,20 @@ export const CREATE_PEDIDO = gql`
         }
       }
     }
+  }
+`;
+
+export const UPDATE_ORDEN_ESTADO = gql`
+  mutation UpdateOrdenEstado($id: ID!, $estado: String!) {
+    updateOrdenEstado(id: $id, estado: $estado) {
+      id
+      estado
+    }
+  }
+`;
+
+export const DELETE_ORDEN = gql`
+  mutation DeleteOrden($id: ID!) {
+    deleteOrden(id: $id)
   }
 `;

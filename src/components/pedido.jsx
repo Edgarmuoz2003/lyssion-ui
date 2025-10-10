@@ -52,6 +52,8 @@ const Pedido = () => {
     productoId: producto.id,
     cantidad: producto.cantidad,
     precioUnitario: producto.precio,
+    color: producto.color,
+    talla: producto.talla,
   }));
 
   const [createOrden, { data: producData, loading, error }] =
