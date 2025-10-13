@@ -28,6 +28,7 @@ import Pedido from "./components/pedido";
 import { useOrdenesStore } from "./utils/useOrdenesStore";
 import PedidosList from "./components/pedidosList";
 import Configuraciones from "./components/configuraciones";
+import Nosotros from "./components/nosotros";
 
 function App() {
  useColoresStore();
@@ -53,6 +54,7 @@ function App() {
           <Route path="/detalles/:id" element={<Detalle />} />
           <Route path="/carrito" element={<Carrito />} />
           <Route path="/pedido" element={<Pedido />} />
+          <Route path="/Nosotros" element={<Nosotros />} />
           <Route path="/Configuraciones" element={ <PrivateRoute><Configuraciones /></PrivateRoute> } />
           <Route path="/Colores" element={<PrivateRoute><Colores /></PrivateRoute>} />
           <Route path="/Tallas" element={<PrivateRoute><Tallas /></PrivateRoute>} />

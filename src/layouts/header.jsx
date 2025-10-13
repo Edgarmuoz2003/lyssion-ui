@@ -36,7 +36,7 @@ const handleLogin = () => {
             <Nav.Link href="/Pijamas">Pijamas</Nav.Link>
             <Nav.Link href="/Casual">Casual</Nav.Link>
             <Nav.Link href="/Deportiva">Deportiva</Nav.Link>
-            <Nav.Link href="#about">Nosotros</Nav.Link>
+            <Nav.Link href="/Nosotros">Nosotros</Nav.Link>
             {isAuthenticated && (
               <Nav.Link href="/Configuraciones">Configuraciones</Nav.Link>
             )}

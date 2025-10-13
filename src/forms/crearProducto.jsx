@@ -64,7 +64,7 @@ const ModalCrear = ({ handleClose, show }) => {
     }
   );
 
-  const [createProducto] = useMutation(CREATE_PRODUCTS, {
+  const [createProducto, { loading: creandoProducto }] = useMutation(CREATE_PRODUCTS, {
     onCompleted: (data) => {
       // 3. Cuando el producto se crea, llamamos a la query para refrescar la lista completa.
       refrescarProductos();
@@ -159,6 +159,26 @@ const ModalCrear = ({ handleClose, show }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (!nombre.trim()) {
+      return mostrarError("El nombre del producto es obligatorio.");
+    }
+    if (!descripcion.trim()) {
+      return mostrarError("La descripción del producto es obligatoria.");
+    }
+    if (!precio || precio <= 0) {
+      return mostrarError("El precio del producto debe ser un número válido y mayor que cero.");
+    }
+    if (tallaIds.length === 0) {
+      return mostrarError("Debe seleccionar al menos una talla.");
+    }
+    if (!categoriaId) {
+      return mostrarError("Debe seleccionar una categoría.");
+    }
+    if (imagenes.length === 0) {
+      return mostrarError("Debe añadir al menos una imagen para el producto.");
+    }
+
 
     const input = {
       nombre,
@@ -348,8 +368,8 @@ const ModalCrear = ({ handleClose, show }) => {
                 </div>
               )}
             </Form.Group>
-            <Button variant="primary" type="submit">
-              Guardar
+            <Button variant="primary" type="submit" disabled={creandoProducto || cargandoProductos}>
+              {creandoProducto || cargandoProductos ? "Guardando..." : "Guardar"}
             </Button>
           </Form>
         </Modal.Body>
