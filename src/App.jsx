@@ -1,67 +1,123 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import Productos from "./components/configuraciones";
-import Colores from "./components/colores";
-import Categorias from "./components/categorias";
-import Pijamas from "./components/pijamas";
-import Casual from "./components/casual";
-import Deportiva from "./components/deportiva";
-import Header from "./layouts/header";
-import Footer from "./layouts/footer";
+import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { PrivateRoute } from "./utils/privateRoutes";
+
+// 🪣 Zustand stores
 import { useColoresStore } from "./utils/useColoresStore";
-import Tallas from "./components/tallas";
 import { useTallasStore } from "./utils/useTallasStore";
 import { useCategoriasStore } from "./utils/useCategoriasStore";
 import { useProductosStore } from "./utils/useProductosStore";
-import Usuarios from "./components/usuarios";
 import { useUsuariosStore } from "./utils/useUsuariosStore";
-import Login from "./components/login";
 import { useLogindata } from "./utils/useLoginData";
-import { PrivateRoute } from "./utils/privateRoutes";
-import Home from "./components/home";
-import Detalle from "./components/detalle";
-import KartButton from "./layouts/kartButton";
-import Carrito from "./components/carrito";
-import Pedido from "./components/pedido";
 import { useOrdenesStore } from "./utils/useOrdenesStore";
-import PedidosList from "./components/pedidosList";
-import Configuraciones from "./components/configuraciones";
-import Nosotros from "./components/nosotros";
+
+// 📦 Componentes cargados siempre (layout)
+import Header from "./layouts/header";
+import Footer from "./layouts/footer";
+import KartButton from "./layouts/kartButton";
+
+// 💨 Lazy load para las páginas
+const Home = lazy(() => import("./components/home"));
+const Login = lazy(() => import("./components/login"));
+const Pijamas = lazy(() => import("./components/pijamas"));
+const Casual = lazy(() => import("./components/casual"));
+const Deportiva = lazy(() => import("./components/deportiva"));
+const Detalle = lazy(() => import("./components/detalle"));
+const Carrito = lazy(() => import("./components/carrito"));
+const Pedido = lazy(() => import("./components/pedido"));
+const Nosotros = lazy(() => import("./components/nosotros"));
+const Configuraciones = lazy(() => import("./components/configuraciones"));
+const Colores = lazy(() => import("./components/colores"));
+const Tallas = lazy(() => import("./components/tallas"));
+const Categorias = lazy(() => import("./components/categorias"));
+const Usuarios = lazy(() => import("./components/usuarios"));
+const PedidosList = lazy(() => import("./components/pedidosList"));
 
 function App() {
- useColoresStore();
- useTallasStore();
- useCategoriasStore();
- useProductosStore();
- useUsuariosStore();
- useLogindata();
- useOrdenesStore();
- 
+  // Inicializa los estados globales (Zustand)
+  useColoresStore();
+  useTallasStore();
+  useCategoriasStore();
+  useProductosStore();
+  useUsuariosStore();
+  useLogindata();
+  useOrdenesStore();
+
   return (
     <>
       <ToastContainer position="bottom-right" />
       <Router>
         <Header />
         <KartButton />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/Login" element={<Login />} />
-          <Route path="/Pijamas" element={<Pijamas />}/>
-          <Route path="/Casual" element={<Casual />}/>
-          <Route path="/Deportiva" element={<Deportiva />}/>
-          <Route path="/detalles/:id" element={<Detalle />} />
-          <Route path="/carrito" element={<Carrito />} />
-          <Route path="/pedido" element={<Pedido />} />
-          <Route path="/Nosotros" element={<Nosotros />} />
-          <Route path="/Configuraciones" element={ <PrivateRoute><Configuraciones /></PrivateRoute> } />
-          <Route path="/Colores" element={<PrivateRoute><Colores /></PrivateRoute>} />
-          <Route path="/Tallas" element={<PrivateRoute><Tallas /></PrivateRoute>} />
-          <Route path="/Categorias" element={<PrivateRoute><Categorias /></PrivateRoute>} />
-          <Route path="/Usuarios" element={<PrivateRoute><Usuarios /></PrivateRoute>} />
-          <Route path="/PedidosList" element={<PrivateRoute><PedidosList /></PrivateRoute>} />
-        </Routes>
+
+        {/* 🌀 Suspense muestra un loader mientras carga cada página */}
+        <Suspense fallback={<div className="text-center p-5">Cargando...</div>}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/Login" element={<Login />} />
+            <Route path="/Pijamas" element={<Pijamas />} />
+            <Route path="/Casual" element={<Casual />} />
+            <Route path="/Deportiva" element={<Deportiva />} />
+            <Route path="/detalles/:id" element={<Detalle />} />
+            <Route path="/carrito" element={<Carrito />} />
+            <Route path="/pedido" element={<Pedido />} />
+            <Route path="/Nosotros" element={<Nosotros />} />
+
+            {/* 🔐 Rutas privadas */}
+            <Route
+              path="/Configuraciones"
+              element={
+                <PrivateRoute>
+                  <Configuraciones />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/Colores"
+              element={
+                <PrivateRoute>
+                  <Colores />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/Tallas"
+              element={
+                <PrivateRoute>
+                  <Tallas />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/Categorias"
+              element={
+                <PrivateRoute>
+                  <Categorias />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/Usuarios"
+              element={
+                <PrivateRoute>
+                  <Usuarios />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/PedidosList"
+              element={
+                <PrivateRoute>
+                  <PedidosList />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </Suspense>
+
         <Footer />
       </Router>
     </>
