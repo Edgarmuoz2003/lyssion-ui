@@ -290,7 +290,7 @@ body {
   width: 100%;
   height: auto;
   max-height: 70vh;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 8px;
 }
 
@@ -552,4 +552,8 @@ body {
   .timeline-item.right {
     left: 0;
   }
+}
+
+.btn-crearProducto{
+  width: 180px !important ;
 }

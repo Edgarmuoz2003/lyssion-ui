@@ -43,6 +43,22 @@ const ModalCrear = ({ handleClose, show }) => {
     error: categoriasError,
   } = useQuery(GET_CATEGORIAS);
 
+  // Función para limpiar todos los estados del formulario.
+  const resetForm = () => {
+    setSelectedImagenes([]);
+    setImagenes([]);
+    setNombre("");
+    setDescripcion("");
+    setPrecio(undefined);
+    setTallaIds([]);
+    setColoIds([]);
+    setCategoriaId(null);
+    setColorsToview([]);
+    setSelectedColor(null);
+    setselectedTallas([]);
+    setSelectedCategoria(null);
+  };
+
   // 1. Obtenemos la acción para REEMPLAZAR la lista de productos en Zustand.
   const setProductos = useMainStore((state) => state.setProductos);
 
@@ -55,6 +71,7 @@ const ModalCrear = ({ handleClose, show }) => {
         // 4. Cuando la lista se refresca, la guardamos en Zustand.
         setProductos(data.productos);
         mostrarExito("Producto creado y lista actualizada.");
+        resetForm(); // Limpiamos el formulario.
         handleClose(); // Cerramos el modal solo después de que todo esté actualizado.
       },
       onError: (error) => {

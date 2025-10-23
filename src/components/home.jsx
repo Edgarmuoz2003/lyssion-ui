@@ -1,10 +1,11 @@
 import InitialBaner from "../layouts/baneerInicio";
-import { Container, Card, Row, Col, Button, Form } from "react-bootstrap";
+import { Container, Card, Row, Col } from "react-bootstrap";
 import catPijamas from "../assets/catPijamas.jpg";
 import catCasual from "../assets/catCasual.jpg";
 import catDeportiva from "../assets/catDeportiva.jpg";
 import { Link } from "react-router-dom";
 import Marquee from "react-fast-marquee";
+import { useEffect, useState } from "react";
 import { GET_ULTIMOS_PRODUCTOS } from "../graphql/queries/productQueries";
 import { useQuery } from "@apollo/client";
 import ProductCard from "../layouts/poducto";
@@ -12,7 +13,22 @@ import { Star } from 'react-bootstrap-icons';
 import ValoresLyssion from "../layouts/valoresLyssion";
 
 const Home = () => {
-  const { data, loading, error } = useQuery(GET_ULTIMOS_PRODUCTOS);
+  // 1. Añadimos un estado para forzar la re-renderización del Marquee.
+  const [isMarqueeVisible, setIsMarqueeVisible] = useState(false);
+
+  // 2. Usamos un efecto para actualizar la 'key' del Marquee después de un breve retardo.
+  //    Esto le da tiempo a las imágenes para cargarse y fuerza al Marquee a recalcular el layout.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsMarqueeVisible(true);
+    }, 100); // Un retardo muy corto es suficiente para este enfoque.
+    return () => clearTimeout(timer); // Limpiamos el temporizador si el componente se desmonta.
+  }, []); // Se ejecuta solo una vez después del montaje inicial.
+
+  const { data, loading, error } = useQuery(GET_ULTIMOS_PRODUCTOS, {
+    // 1. Se añade una fetchPolicy para asegurar que siempre se obtengan los datos más frescos de la red.
+    fetchPolicy: "network-only",
+  });
 
   if (loading) return <p>Cargando...</p>;
   if (error) {
@@ -32,7 +48,7 @@ const Home = () => {
       {/* SECCIÓN 2: CATEGORIAS */}
 
       <section className="section-categorias-home">
-        <h1 className="titulo-home-inicio">Nuestras Categorias</h1>
+    
         <Container>
           <div className="Categorias-container-home">
             <Card className="categoria-item">
@@ -60,15 +76,21 @@ const Home = () => {
       <section className="section-lo-ultimo-home bg-light">
         <h1 className="titulo-home-inicio">Lo último</h1>
         {data?.ultimosProductos && data.ultimosProductos.length > 0 ? (
+          <div style={{ 
+            opacity: isMarqueeVisible ? 1 : 0, 
+            transition: 'opacity 0.5s ease-in-out' 
+          }}>
           <Marquee>
             <div style={{ display: "flex", gap: "1rem" }}>
               {data.ultimosProductos.map((producto) => (
-                <div key={producto.id} style={{ minWidth: 200 }}>
+                // 3. Aseguramos un tamaño mínimo consistente para cada item.
+                <div key={producto.id} style={{ width: '220px', padding: '0 10px' }}>
                   <ProductCard producto={producto} />
                 </div>
               ))}
             </div>
           </Marquee>
+          </div>
         ) : (
           <p style={{ textAlign: "center" }}>No hay productos nuevos para mostrar.</p>
         )}
@@ -77,7 +99,7 @@ const Home = () => {
       {/* SECCIÓN 2: TESTIMONIOS */}
       <section className="section-testimonios-home py-5">
         <Container>
-          <h1 className="titulo-home-inicio">Lo que dicen nuestras clientas</h1>
+          <h1 className="titulo-home-inicio">Lo que dicen nuestros clientes</h1>
           <Row>
             <Col md={4} className="mb-4">
               <Card className="text-center h-100">

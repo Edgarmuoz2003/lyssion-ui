@@ -218,7 +218,7 @@ const Detalle = () => {
         </Col>
 
         {/* Columna de Imagen Principal */}
-        <Col md={6}>
+        <Col md={5}>
           {mainImage ? (
             <img
               src={mainImage.url}
@@ -246,7 +246,7 @@ const Detalle = () => {
         </Col>
 
         {/* Columna de Información del Producto */}
-        <Col md={5}>
+        <Col md={6}>
           <h2>{producto.nombre}</h2>
           <p className="text-muted">{producto.descripcion}</p>
 

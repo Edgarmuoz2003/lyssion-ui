@@ -3,7 +3,7 @@ import { create } from "zustand";
 const savedToken = localStorage.getItem("token");
 const savedUser = JSON.parse(localStorage.getItem("user"));
 
-export const useMainStore = create((set) => ({
+export const useMainStore = create((set, get) => ({
   loginData: {
     user: savedUser,
     token: savedToken || null,
@@ -80,5 +80,7 @@ export const useMainStore = create((set) => ({
     set((state) => ({
       ordenes: state.ordenes.filter((orden) => orden.id !== id),
     })),
+    getOrdenById: (id) =>
+    get().ordenes.find((orden) => orden.id === id),
   }));
  

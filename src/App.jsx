@@ -18,6 +18,7 @@ import { useOrdenesStore } from "./utils/useOrdenesStore";
 import Header from "./layouts/header";
 import Footer from "./layouts/footer";
 import KartButton from "./layouts/kartButton";
+import WhatsappButton from "./layouts/whatsappButton";
 
 // 💨 Lazy load para las páginas
 const Home = lazy(() => import("./components/home"));
@@ -35,6 +36,8 @@ const Tallas = lazy(() => import("./components/tallas"));
 const Categorias = lazy(() => import("./components/categorias"));
 const Usuarios = lazy(() => import("./components/usuarios"));
 const PedidosList = lazy(() => import("./components/pedidosList"));
+const PoliticaDeDatos = lazy(() => import("./components/PoliticaDeDatos"));
+const DetallesPedido = lazy(() => import("./components/detallesPedido"));
 
 function App() {
   // Inicializa los estados globales (Zustand)
@@ -52,6 +55,7 @@ function App() {
       <Router>
         <Header />
         <KartButton />
+        <WhatsappButton />
 
         {/* 🌀 Suspense muestra un loader mientras carga cada página */}
         <Suspense fallback={<div className="text-center p-5">Cargando...</div>}>
@@ -62,9 +66,11 @@ function App() {
             <Route path="/Casual" element={<Casual />} />
             <Route path="/Deportiva" element={<Deportiva />} />
             <Route path="/detalles/:id" element={<Detalle />} />
+            <Route path="/detallesPedido/:id" element={<DetallesPedido />} />
             <Route path="/carrito" element={<Carrito />} />
             <Route path="/pedido" element={<Pedido />} />
             <Route path="/Nosotros" element={<Nosotros />} />
+            <Route path="/politica-de-datos" element={<PoliticaDeDatos />} />
 
             {/* 🔐 Rutas privadas */}
             <Route

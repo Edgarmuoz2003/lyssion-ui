@@ -54,8 +54,8 @@ const Configuraciones = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button onClick={handleShow}>
-            <IoMdAdd size={22} /> Crear
+          <Button onClick={handleShow} className="btn-crearProducto">
+            <IoMdAdd size={22} /> Crear producto
           </Button>
         </div>
         <ModalCrear handleClose={handleClose} show={show} />
