@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery } from "@apollo/client";
-import { GET_USUARIO } from "../graphql/queries/productQueries";
-import { useMainStore } from "../store/useMainStore";
+import { GET_USUARIO } from "../../graphql/queries/productQueries";
+import { useMainStore } from "../../store/useMainStore";
 
 export function useUsuariosStore() {
   const setUsuarios = useMainStore((state) => state.setUsuarios);

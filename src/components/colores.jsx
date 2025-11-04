@@ -2,47 +2,19 @@ import { useState } from "react";
 import { Container, Button, Form, Card } from "react-bootstrap";
 import { IoMdAdd } from "react-icons/io";
 import { FaSave, FaTrash, FaArrowLeft } from "react-icons/fa";
-import { useMutation } from "@apollo/client";
-import { CREATE_COLORS, DELETE_COLORS } from "../graphql/mutations/productMutatios";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
-import { useColoresStore } from "../utils/useColoresStore";
+import { useColoresStore } from "../utils/hooks/useColoresStore";
 import { Link } from "react-router-dom";
-
+import SpinnerComponet from "../layouts/spinnerComponent";
 
 const Colores = () => {
   const [codigo_hex, setCodigo_hex_] = useState("#000000");
   const [nombre, setNombre_] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const { colores, loading, error, refetch } = useColoresStore();
+  const { colores, loading, error, refetch, createColor, deleteColor } =
+    useColoresStore();
 
-
-  const handleShowForm = () => {
-    setShowForm(!showForm);
-  };
-
-  const [createColor] = useMutation(CREATE_COLORS, {
-    onCompleted: (data) => {
-      if (data.createColor) {
-        mostrarExito("Color agregado correctamente");
-        setCodigo_hex_("#000000");
-        setNombre_("");
-      }
-    },
-    onError: (error) => {
-      mostrarError(error.message);
-    },
-  });
-
-  const [deleteColor] = useMutation(DELETE_COLORS, {
-    onCompleted: (data) => {
-      if (data.deleteColor) {
-        mostrarExito("Color eliminado correctamente");
-      }
-    },
-    onError: (error) => {
-      mostrarError(error.message);
-    },
-  });
+  const handleShowForm = () => setShowForm(!showForm);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,11 +30,13 @@ const Colores = () => {
           codigo_hex,
         },
       });
-      refetch();
-        setShowForm(false);
+      mostrarExito("Color agregado correctamente");
+      setCodigo_hex_("#000000");
+      setNombre_("");
+      setShowForm(false);
     } catch (error) {
       console.error("Error al crear color:", error);
-      mostrarError("A ocurrido un error al agregar el color" );
+      mostrarError("A ocurrido un error al agregar el color");
     }
   };
 
@@ -71,15 +45,20 @@ const Colores = () => {
       await deleteColor({
         variables: { id },
       });
-      refetch();
     } catch (error) {
       console.error("Error al eliminar el color:", error);
       mostrarError("A ocurrido un error al eliminar el color");
     }
-  }
+  };
 
-  if (loading) return <p>Cargando colores...</p>;
-  if (error) return <p>Error al cargar colores: {error.message}</p>;
+  if (loading) return <SpinnerComponet />;
+  if (error) return <AlertComponent
+      variant="danger"
+      heading="Error al cargar colores"
+      actions={<Button onClick={() => refetch()}>Reintentar</Button>}
+    >
+      {error.message}
+    </AlertComponent>;
 
   return (
     <>
@@ -128,7 +107,7 @@ const Colores = () => {
             </Card>
           </div>
         )}
-        <div className="colores-list"> 
+        <div className="colores-list">
           <h2 className="text-center">Lista de Colores</h2>
           <table className="table table-striped">
             <thead>
@@ -143,9 +122,11 @@ const Colores = () => {
               {colores.map((color) => (
                 <tr key={color.id}>
                   <td>
-                    <Button 
-                    variant="danger" size="sm"
-                    onClick={() => handleDelete(color.id)}>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDelete(color.id)}
+                    >
                       <FaTrash />
                     </Button>
                   </td>
@@ -160,7 +141,7 @@ const Colores = () => {
                     ></div>
                   </td>
                   <td>{color.nombre}</td>
-                  <td >{ color.codigo_hex }</td>
+                  <td>{color.codigo_hex}</td>
                 </tr>
               ))}
             </tbody>

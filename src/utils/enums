@@ -1,5 +1,0 @@
-export const ESTADO_OPTIONS = {
-    Pendiente: 'pendiente',
-    Proceso:'En proceso',
-    Despachado: 'Despachado'
-}

@@ -1,4 +1,4 @@
-import { useMainStore } from "../store/useMainStore";
+import { useMainStore } from "../../store/useMainStore";
 
 export function useLogindata() {
  const user = useMainStore((state) => state.loginData?.user);

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery } from "@apollo/client";
-import { GET_ORDENES } from "../graphql/queries/productQueries";
-import { useMainStore } from "../store/useMainStore";
+import { GET_ORDENES } from "../../graphql/queries/productQueries";
+import { useMainStore } from "../../store/useMainStore";
 
 export function useOrdenesStore() {
   const setOrdenes = useMainStore((state) => state.setOrdenes);

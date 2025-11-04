@@ -8,7 +8,7 @@ import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { useMutation } from "@apollo/client";
 import { MAKE_LOGIN } from "../graphql/mutations/productMutatios";
 import { useNavigate } from "react-router-dom";
-import { useLogindata } from "../utils/useLoginData";
+import { useLogindata } from "../utils/hooks/useLoginData";
 
 const Login = () => {
   const ImagenFondo = useMainStore((state) => state.ImagenFondo);

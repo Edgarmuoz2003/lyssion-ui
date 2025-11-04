@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useMainStore } from "../store/useMainStore";
+import { useMainStore } from "../../store/useMainStore";
 import { useQuery } from "@apollo/client";
-import { GET_CATEGORIAS } from "../graphql/queries/productQueries";
+import { GET_CATEGORIAS } from "../../graphql/queries/productQueries";
 
 
 export function useCategoriasStore() {

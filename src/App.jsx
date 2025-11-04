@@ -4,15 +4,15 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PrivateRoute } from "./utils/privateRoutes";
+import SpinnerComponent from "./layouts/spinnerComponent";
 
 // 🪣 Zustand stores
-import { useColoresStore } from "./utils/useColoresStore";
-import { useTallasStore } from "./utils/useTallasStore";
-import { useCategoriasStore } from "./utils/useCategoriasStore";
-import { useProductosStore } from "./utils/useProductosStore";
-import { useUsuariosStore } from "./utils/useUsuariosStore";
-import { useLogindata } from "./utils/useLoginData";
-import { useOrdenesStore } from "./utils/useOrdenesStore";
+import { useTallasStore } from "./utils/hooks/useTallasStore";
+import { useCategoriasStore } from "./utils/hooks/useCategoriasStore";
+import { useProductosStore } from "./utils/hooks/useProductosStore";
+import { useUsuariosStore } from "./utils/hooks/useUsuariosStore";
+import { useLogindata } from "./utils/hooks/useLoginData";
+import { useOrdenesStore } from "./utils/hooks/useOrdenesStore";
 
 // 📦 Componentes cargados siempre (layout)
 import Header from "./layouts/header";
@@ -47,6 +47,7 @@ function App() {
   useUsuariosStore();
   useLogindata();
   useOrdenesStore();
+  
 
   return (
     <>
@@ -57,7 +58,13 @@ function App() {
         <WhatsappButton />
 
         {/* 🌀 Suspense muestra un loader mientras carga cada página */}
-        <Suspense fallback={<div className="text-center p-5">Cargando...</div>}>
+        <Suspense
+          fallback={
+            <div className="d-flex justify-content-center align-items-center vh-100 bg-white">
+              <SpinnerComponent />
+            </div>
+          }
+        >
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/Login" element={<Login />} />
