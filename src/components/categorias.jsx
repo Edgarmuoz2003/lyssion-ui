@@ -1,53 +1,23 @@
 import { useState } from "react";
-import { useMainStore } from "../store/useMainStore";
-import { useCategoriasStore } from "../utils/useCategoriasStore";
-import { useMutation } from "@apollo/client";
-import {
-  CREATE_CATEGORIAS,
-  DELETE_CATEGORIAS,
-} from "../graphql/mutations/productMutatios";
+import { useCategoriasStore } from "../utils/hooks/useCategoriasStore";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { Button, Card, Container, Form } from "react-bootstrap";
 import { IoMdAdd } from "react-icons/io";
-import { FaSave, FaTrash } from "react-icons/fa";
+import { FaArrowLeft, FaSave, FaTrash } from "react-icons/fa";
+import SpinnerComponet from "../layouts/spinnerComponent";
+import AlertComponent from "../layouts/alertComponent";
+import { Link } from "react-router-dom";
 
 const Categorias = () => {
   const [nombre, setNombre] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const addCategoria = useMainStore((state) => state.addCategoria);
-  const delCategoria = useMainStore((state) => state.delCategoria);
-  const categorias = useMainStore((state) => state.categorias);
-  console.log("esto lelga en categorias", categorias)
 
-  const { loading, error } = useCategoriasStore();
+  const { categorias,loading, error, refetch, createCategoria, deleteCategoria} = useCategoriasStore();
 
   const handleShowForm = () => {
     setShowForm(!showForm);
   };
 
-  const [createCategoria] = useMutation(CREATE_CATEGORIAS, {
-    onCompleted: (data) => {
-      if (data.createCategoria) {
-        addCategoria(data.createCategoria);
-        mostrarExito("categoria agregada correctamente");
-        setNombre("");
-      }
-    },
-    onError: (error) => {
-      mostrarError(error.message);
-    },
-  });
-
-  const [deleteCategoria] = useMutation(DELETE_CATEGORIAS, {
-    onCompleted: (data) => {
-      if (data.deleteCategoria) {
-        mostrarExito("Categoria eliminado correctamente");
-      }
-    },
-    onError: (error) => {
-      mostrarError(error.message);
-    },
-  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,10 +32,12 @@ const Categorias = () => {
           nombre,
         },
       });
+      mostrarExito("Categoria agregada correctamente");
+      setNombre("");
       setShowForm(false);
     } catch (error) {
-      mostrarError("Error al agregar el categoria: " + error.message);
-      throw new Error("Error al crear la categoria: " + error.message);
+      console.error("Error al agregar la categoria:", error);
+      mostrarError("A ocurrido un error al agregar el categoria");
     }
   };
 
@@ -74,18 +46,32 @@ const Categorias = () => {
       await deleteCategoria({
         variables: { id },
       });
-      delCategoria(id);
+      mostrarExito("Categoria eliminada correctamente");
     } catch (error) {
-      mostrarError("Error al eliminar la categoria: " + error.message);
+      console.error("A ocurrido un error al eliminar la categoria: ", error);
+      mostrarError("A ocurrido un error al eliminar la categoria");
     }
   };
 
-  if (loading) return <p>Cargando categeorias...</p>;
-  if (error) return <p>Error al cargar categorias: {error.message}</p>;
+  if (loading) return <SpinnerComponet />;
+  if (error) return <AlertComponent
+     variant="danger"
+     heading="Error"
+     actions={<Button onClick={() => refetch()}>Reintentar</Button>}
+   >
+     {error.message}
+  </AlertComponent>
+  
   return (
+    
     <>
       <Container>
-        <h1 className="text-center m-5">Gestión de categorias</h1>
+          <div className="d-flex align-items-center">
+            <Link to="/Configuraciones" className="btn btn-light border me-3">
+              <FaArrowLeft />
+            </Link>
+            <h1 className="mb-0">Gestión de categorias</h1>
+          </div>
         <Button onClick={handleShowForm}>
           <IoMdAdd size={20} /> Agregar
         </Button>

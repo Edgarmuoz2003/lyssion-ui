@@ -45,6 +45,7 @@ const Colores = () => {
       await deleteColor({
         variables: { id },
       });
+      mostrarExito("Color eliminado correctamente");
     } catch (error) {
       console.error("Error al eliminar el color:", error);
       mostrarError("A ocurrido un error al eliminar el color");
