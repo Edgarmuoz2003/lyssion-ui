@@ -28,99 +28,89 @@ export const GET_CATEGORIAS = gql`
   }
 `;
 
+// ACTUALIZADO: Query para obtener productos con la nueva estructura de SKUs
 export const GET_PRODUCTOS = gql`
   query GetProducts($where: JSON) {
     productos(where: $where) {
       id
       nombre
       descripcion
-      precio
-      imagenes {
+      categoria {
         id
-        url
+        nombre
+      }
+      # 'coloresDisponibles' te da los colores y sus imágenes asociadas
+      coloresDisponibles {
+        id
         color {
           id
           nombre
           codigo_hex
         }
+        imagenes {
+          id
+          url
+          isPrincipal
+        }
       }
-      categoria {
+      # 'variaciones' te da cada SKU (combinación talla-color) con su precio y stock
+      variaciones {
         id
-        nombre
-      }
-      tallas {
-        id
-        nombre
-      }
-      colores {
-        id
-        nombre
-        codigo_hex
+        precio
+        stock
+        infoTalla {
+          id
+          nombre
+        }
+        infoColor {
+          id
+          nombre
+        }
       }
     }
   }
 `;
 
+// ACTUALIZADO: Query para últimos productos, igual que GET_PRODUCTOS
 export const GET_ULTIMOS_PRODUCTOS = gql`
   query GetUltimosProductos {
     ultimosProductos {
       id
       nombre
       descripcion
-      precio
-      imagenes {
+      categoria {
         id
-        url
+        nombre
+      }
+      coloresDisponibles {
+        id
         color {
           id
           nombre
           codigo_hex
         }
+        imagenes {
+          id
+          url
+          isPrincipal
+        }
       }
-      categoria {
+      variaciones {
         id
-        nombre
-      }
-      tallas {
-        id
-        nombre
-      }
-      colores {
-        id
-        nombre
-        codigo_hex
+        precio
+        stock
+        infoTalla {
+          id
+          nombre
+        }
+        infoColor {
+          id
+          nombre
+        }
       }
     }
   }
 `;
-
-// export const GET_PIJAMAS = gql`
-//   query GetPijamas($where: JSON){
-//     productos(where: { categoria: { nombre: "Pijamas" } }) {
-//       id
-//       nombre
-//       descripcion
-//       precio
-//       imagenes {
-//         id
-//         url
-//       }
-//       categoria {
-//         id
-//         nombre
-//       }
-//       tallas {
-//         id
-//         nombre
-//       }
-//       colores {
-//         id
-//         nombre
-//         codigo_hex
-//       }
-//     }
-//   }
-// `;
 
 export const GET_USUARIO = gql`
   query GetUsuarios {
@@ -164,6 +154,7 @@ export const GET_CLIENTE = gql`
   }
 `;
 
+// ACTUALIZADO: Query para obtener órdenes con la nueva estructura de items
 export const GET_ORDENES = gql`
   query GetOrdenes($where: JSON) {
     ordenes(where: $where) {
@@ -176,23 +167,21 @@ export const GET_ORDENES = gql`
         id
         nombre
         apellido
-        documento
-        direccion
-        telefono
-        email
-        departamento
-        ciudad
       }
-      productos {
-        id
-        cantidad
-        precioUnitario
-        color
-        talla
-        producto {
-          id
+      # 'productos' ahora es 'items', que son las variaciones del producto
+      items {
+        id # ID de la ProductoVariacion
+        # Información de la variación comprada
+        infoTalla {
           nombre
-          precio
+        }
+        infoColor {
+          nombre
+        }
+        # 'ProductoOrden' contiene los datos de la tabla intermedia
+        ProductoOrden {
+          cantidad
+          precioUnitario
         }
       }
     }

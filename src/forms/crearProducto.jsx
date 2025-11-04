@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
 import { useState } from "react";
-import { Button, Modal, Form, Row, Col, Image } from "react-bootstrap";
+import { Button, Modal, Form, Image } from "react-bootstrap";
 import Select from "react-select";
 import {
   GET_COLORS,
@@ -9,23 +9,45 @@ import {
   GET_PRODUCTOS,
 } from "../graphql/queries/productQueries";
 import { IoMdAdd } from "react-icons/io";
-import { CREATE_PRODUCTS } from "../graphql/mutations/productMutatios"; // Asegúrate que el path sea correcto
+import { CREATE_PRODUCTS } from "../graphql/mutations/productMutatios";
 import { useMainStore } from "../store/useMainStore";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 
+const INITIAL_VARIATION_DRAFT = { talla: null, precio: "", stock: "" };
+
 const ModalCrear = ({ handleClose, show }) => {
-  const [selectedImagenes, setSelectedImagenes] = useState([]);
-  const [imagenes, setImagenes] = useState([]);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [precio, setPrecio] = useState();
-  const [tallaIds, setTallaIds] = useState([]);
-  const [colorIds, setColoIds] = useState([]);
-  const [categoriaId, setCategoriaId] = useState(null);
-  const [colorsToview, setColorsToview] = useState([]);
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedTallas, setselectedTallas] = useState([]);
   const [selectedCategoria, setSelectedCategoria] = useState(null);
+  const [selectedColorOption, setSelectedColorOption] = useState(null);
+  const [colorEntries, setColorEntries] = useState([]);
+  const [variationDrafts, setVariationDrafts] = useState({});
+
+  const formateador = new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
+  const resetForm = () => {
+    setColorEntries((prev) => {
+      prev.forEach((entry) => {
+        entry.images.forEach((image) => URL.revokeObjectURL(image.preview));
+      });
+      return [];
+    });
+    setVariationDrafts({});
+    setSelectedColorOption(null);
+    setNombre("");
+    setDescripcion("");
+    setSelectedCategoria(null);
+  };
+
+  const handleModalClose = () => {
+    resetForm();
+    handleClose();
+  };
 
   const {
     data: coloresData,
@@ -43,70 +65,38 @@ const ModalCrear = ({ handleClose, show }) => {
     error: categoriasError,
   } = useQuery(GET_CATEGORIAS);
 
-  // Función para limpiar todos los estados del formulario.
-  const resetForm = () => {
-    setSelectedImagenes([]);
-    setImagenes([]);
-    setNombre("");
-    setDescripcion("");
-    setPrecio(undefined);
-    setTallaIds([]);
-    setColoIds([]);
-    setCategoriaId(null);
-    setColorsToview([]);
-    setSelectedColor(null);
-    setselectedTallas([]);
-    setSelectedCategoria(null);
-  };
-
-  // 1. Obtenemos la acción para REEMPLAZAR la lista de productos en Zustand.
   const setProductos = useMainStore((state) => state.setProductos);
 
-  // 2. Preparamos una "lazy query" para poder refrescar la lista de productos cuando la necesitemos.
   const [refrescarProductos, { loading: cargandoProductos }] = useLazyQuery(
     GET_PRODUCTOS,
     {
-      fetchPolicy: "network-only", // ¡MUY IMPORTANTE! No usar el caché para esto.
+      fetchPolicy: "network-only",
       onCompleted: (data) => {
-        // 4. Cuando la lista se refresca, la guardamos en Zustand.
         setProductos(data.productos);
         mostrarExito("Producto creado y lista actualizada.");
-        resetForm(); // Limpiamos el formulario.
-        handleClose(); // Cerramos el modal solo después de que todo esté actualizado.
+        handleModalClose();
       },
       onError: (error) => {
-        mostrarError("Producto creado, pero falló al refrescar la lista.", error.message);
-        handleClose();
+        mostrarError(
+          "Producto creado, pero falló al refrescar la lista.",
+          error.message
+        );
+        handleModalClose();
       },
     }
   );
 
-  const [createProducto, { loading: creandoProducto }] = useMutation(CREATE_PRODUCTS, {
-    onCompleted: (data) => {
-      // 3. Cuando el producto se crea, llamamos a la query para refrescar la lista completa.
-      refrescarProductos();
-    },
-    onError: (error) => {
-      mostrarError("Error al crear el producto", error.message);
-    },
-  });
-
-  const handleFileChange = (event) => {
-    const files = event.target.files;
-    setSelectedImagenes(Array.from(files));
-  };
-
-  const formateador = new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-
-  const handlePrecioFormat = (event) => {
-    const value = event.target.value;
-    setPrecio(Number(value));
-  };
+  const [createProducto, { loading: creandoProducto }] = useMutation(
+    CREATE_PRODUCTS,
+    {
+      onCompleted: () => {
+        refrescarProductos();
+      },
+      onError: (error) => {
+        mostrarError("Error al crear el producto", error.message);
+      },
+    }
+  );
 
   const coloresOptions =
     coloresData?.colores.map((color) => ({
@@ -127,16 +117,6 @@ const ModalCrear = ({ handleClose, show }) => {
       label: categoria.nombre,
     })) || [];
 
-  const handleTallas = (selectedOptions) => {
-    setselectedTallas(selectedOptions); // <-- ahora guarda los objetos completos
-    setTallaIds(selectedOptions.map((option) => option.value));
-  };
-
-  const handleCategoria = (selectedOptions) => {
-    setSelectedCategoria(selectedOptions); // <-- ahora guarda los objetos completos
-    setCategoriaId(selectedOptions ? selectedOptions.value : null);
-  }
-
   const formatOptionLabel = ({ label, color }) => (
     <div style={{ display: "flex", alignItems: "center" }}>
       <div
@@ -148,69 +128,279 @@ const ModalCrear = ({ handleClose, show }) => {
           marginRight: "8px",
           border: "1px solid #ccc",
         }}
-      ></div>
+      />
       <span>{label}</span>
     </div>
   );
 
-  const handleAddImages = () => {
-    // 4. CORRECCIÓN: Se define `newColor` antes de usarlo.
-    const newColor = {
-      nombre: selectedColor.label,
-      codigo_hex: selectedColor.color,
-    };
+  const handleCategoria = (option) => {
+    setSelectedCategoria(option);
+  };
 
-    setColoIds((prev) => [...prev, selectedColor.value]);
-    setColorsToview((prev) => [...prev, newColor]);
+  const handleAddColor = () => {
+    if (!selectedColorOption) {
+      return mostrarError("Debe seleccionar un color para añadirlo.");
+    }
+    if (colorEntries.some((entry) => entry.colorId === selectedColorOption.value)) {
+      return mostrarError("Ese color ya fue añadido al producto.");
+    }
 
-    const newImages = selectedImagenes.map((file) => ({
-      colorId: selectedColor.value,
-      archivo: file,
+    setColorEntries((prev) => [
+      ...prev,
+      {
+        colorId: selectedColorOption.value,
+        colorOption: selectedColorOption,
+        images: [],
+        variations: [],
+      },
+    ]);
+    setVariationDrafts((prev) => ({
+      ...prev,
+      [selectedColorOption.value]: { ...INITIAL_VARIATION_DRAFT },
     }));
+    setSelectedColorOption(null);
+  };
 
-    setImagenes((prev) => [...prev, ...newImages]);
+  const handleRemoveColor = (colorId) => {
+    setColorEntries((prev) =>
+      prev.reduce((acc, entry) => {
+        if (entry.colorId === colorId) {
+          entry.images.forEach((image) => URL.revokeObjectURL(image.preview));
+          return acc;
+        }
+        return [...acc, entry];
+      }, [])
+    );
+    setVariationDrafts((prev) => {
+      const { [colorId]: _omit, ...rest } = prev;
+      return rest;
+    });
+  };
 
-    setSelectedImagenes([]);
-    setSelectedColor(null);
+  const handleAddImages = (colorId, files) => {
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    const filesArray = Array.from(files);
+
+    setColorEntries((prev) =>
+      prev.map((entry) => {
+        if (entry.colorId !== colorId) {
+          return entry;
+        }
+
+        const newImages = filesArray.map((file, index) => ({
+          id: `${colorId}-${Date.now()}-${index}-${Math.random()}`,
+          file,
+          preview: URL.createObjectURL(file),
+          isPrincipal: false,
+        }));
+
+        const hasPrincipal = entry.images.some((image) => image.isPrincipal);
+        if (!hasPrincipal && newImages.length > 0) {
+          newImages[0].isPrincipal = true;
+        }
+
+        return {
+          ...entry,
+          images: [...entry.images, ...newImages],
+        };
+      })
+    );
+  };
+
+  const handleRemoveImage = (colorId, imageId) => {
+    setColorEntries((prev) =>
+      prev.map((entry) => {
+        if (entry.colorId !== colorId) {
+          return entry;
+        }
+
+        const updatedImages = entry.images
+          .filter((image) => {
+            if (image.id === imageId) {
+              URL.revokeObjectURL(image.preview);
+              return false;
+            }
+            return true;
+          })
+          .map((image) => ({ ...image }));
+
+        if (
+          updatedImages.length > 0 &&
+          !updatedImages.some((image) => image.isPrincipal)
+        ) {
+          updatedImages[0].isPrincipal = true;
+        }
+
+        return {
+          ...entry,
+          images: updatedImages,
+        };
+      })
+    );
+  };
+
+  const handleSetPrincipalImage = (colorId, imageId) => {
+    setColorEntries((prev) =>
+      prev.map((entry) => {
+        if (entry.colorId !== colorId) {
+          return entry;
+        }
+
+        return {
+          ...entry,
+          images: entry.images.map((image) => ({
+            ...image,
+            isPrincipal: image.id === imageId,
+          })),
+        };
+      })
+    );
+  };
+
+  const handleDraftVariationChange = (colorId, field, value) => {
+    setVariationDrafts((prev) => ({
+      ...prev,
+      [colorId]: {
+        ...prev[colorId],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleAddVariation = (colorId) => {
+    const draft = variationDrafts[colorId] || INITIAL_VARIATION_DRAFT;
+    const { talla, precio, stock } = draft;
+
+    if (!talla) {
+      return mostrarError("Debe seleccionar una talla para la variación.");
+    }
+
+    const precioValue = Number(precio);
+    const stockValue = Number(stock);
+
+    if (!Number.isInteger(precioValue) || precioValue <= 0) {
+      return mostrarError("El precio de la variación debe ser un número entero mayor que cero.");
+    }
+
+    if (!Number.isInteger(stockValue) || stockValue < 0) {
+      return mostrarError("El stock debe ser un número entero mayor o igual a cero.");
+    }
+
+    setColorEntries((prev) =>
+      prev.map((entry) => {
+        if (entry.colorId !== colorId) {
+          return entry;
+        }
+
+        if (entry.variations.some((variation) => variation.tallaId === talla.value)) {
+          mostrarError("Esa talla ya existe para el color seleccionado.");
+          return entry;
+        }
+
+        return {
+          ...entry,
+          variations: [
+            ...entry.variations,
+            {
+              id: `${colorId}-${talla.value}`,
+              tallaId: talla.value,
+              tallaNombre: talla.label,
+              precio: precioValue,
+              stock: stockValue,
+            },
+          ],
+        };
+      })
+    );
+
+    setVariationDrafts((prev) => ({
+      ...prev,
+      [colorId]: { ...INITIAL_VARIATION_DRAFT },
+    }));
+  };
+
+  const handleRemoveVariation = (colorId, variationId) => {
+    setColorEntries((prev) =>
+      prev.map((entry) => {
+        if (entry.colorId !== colorId) {
+          return entry;
+        }
+        return {
+          ...entry,
+          variations: entry.variations.filter(
+            (variation) => variation.id !== variationId
+          ),
+        };
+      })
+    );
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    if (colorEntries.length === 0) {
+      return mostrarError("Debe agregar al menos un color con imágenes.");
+    }
+
+    for (const entry of colorEntries) {
+      if (entry.images.length === 0) {
+        return mostrarError(
+          `El color ${entry.colorOption.label} necesita al menos una imagen.`
+        );
+      }
+      if (entry.variations.length === 0) {
+        return mostrarError(
+          `El color ${entry.colorOption.label} necesita al menos una variación.`
+        );
+      }
+    }
+
     if (!nombre.trim()) {
       return mostrarError("El nombre del producto es obligatorio.");
     }
+
     if (!descripcion.trim()) {
       return mostrarError("La descripción del producto es obligatoria.");
     }
-    if (!precio || precio <= 0) {
-      return mostrarError("El precio del producto debe ser un número válido y mayor que cero.");
-    }
-    if (tallaIds.length === 0) {
-      return mostrarError("Debe seleccionar al menos una talla.");
-    }
-    if (!categoriaId) {
+
+    if (!selectedCategoria) {
       return mostrarError("Debe seleccionar una categoría.");
     }
-    if (imagenes.length === 0) {
-      return mostrarError("Debe añadir al menos una imagen para el producto.");
-    }
 
+    const colores = colorEntries.map((entry) => {
+      const normalizedImages = entry.images.map((image) => ({ ...image }));
+
+      if (
+        normalizedImages.length > 0 &&
+        !normalizedImages.some((image) => image.isPrincipal)
+      ) {
+        normalizedImages[0].isPrincipal = true;
+      }
+
+      return {
+        colorId: entry.colorId,
+        imagenes: normalizedImages.map((image) => ({
+          archivo: image.file,
+          isPrincipal: image.isPrincipal,
+        })),
+        variaciones: entry.variations.map((variation) => ({
+          tallaId: variation.tallaId,
+          precio: variation.precio,
+          stock: variation.stock,
+        })),
+      };
+    });
 
     const input = {
-      nombre,
-      descripcion,
-      precio: Number(precio),
-      tallaIds,
-      colorIds,
-      categoriaId,
-      imagenes: imagenes.map((image) => ({
-        colorId: image.colorId,
-        archivo: image.archivo,
-      })),
+      nombre: nombre.trim(),
+      descripcion: descripcion.trim(),
+      categoriaId: selectedCategoria ? selectedCategoria.value : null,
+      colores,
     };
 
-    // 5. SIMPLIFICACIÓN: La lógica de éxito/error ya está en `useMutation`.
     createProducto({
       variables: { input },
     });
@@ -218,64 +408,38 @@ const ModalCrear = ({ handleClose, show }) => {
 
   return (
     <>
-      <Modal
-        show={show}
-        onHide={handleClose}
-        backdrop="static"
-        keyboard={false}
-      >
+      <Modal show={show} onHide={handleModalClose} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Crear producto</Modal.Title>
+          <Modal.Title>Crear Producto</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="productName">
-              <Form.Label>Nombre del producto</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Ingrese el nombre del producto"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="productDescription">
-              <Form.Label>Descripción del producto</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                placeholder="Ingrese la descripción del producto"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group controlId="productPrice">
-              <Form.Label>Precio del producto</Form.Label>
-              <Form.Control
-                type="number"
-                placeholder="Ingrese el precio del producto"
-                value={precio}
-                onChange={handlePrecioFormat}
-              />
-            </Form.Group>
-            {precio > 0 && (
-              <Form.Group className="mb-3">
-                <Form.Label>{formateador.format(precio)}</Form.Label>
-              </Form.Group>
-            )}
-
-            <Form.Group controlId="ColorDisponible" className="mb-3">
-              <Form.Label>Imagenes por color</Form.Label>
-              <Select
-                options={coloresOptions}
-                formatOptionLabel={formatOptionLabel}
-                value={selectedColor}
-                onChange={setSelectedColor}
-                isLoading={coloresLoading}
-                placeholder={
-                  coloresLoading ? "Cargando colores..." : "Seleccione un color"
-                }
-                isDisabled={coloresLoading || !!coloresError}
-              />
+            <Form.Group controlId="colorDisponible" className="mb-4">
+              <Form.Label>Colores e imágenes</Form.Label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <div style={{ flex: 1 }}>
+                  <Select
+                    options={coloresOptions}
+                    value={selectedColorOption}
+                    onChange={setSelectedColorOption}
+                    isLoading={coloresLoading}
+                    placeholder={
+                      coloresLoading
+                        ? "Cargando colores..."
+                        : "Seleccione un color para añadir"
+                    }
+                    isDisabled={coloresLoading || !!coloresError}
+                    formatOptionLabel={formatOptionLabel}
+                  />
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={handleAddColor}
+                  disabled={!selectedColorOption}
+                >
+                  <IoMdAdd size={20} />
+                </Button>
+              </div>
               {coloresError && (
                 <div style={{ color: "red", marginTop: 5 }}>
                   Error al cargar los colores
@@ -283,111 +447,265 @@ const ModalCrear = ({ handleClose, show }) => {
               )}
             </Form.Group>
 
-            {selectedColor && (
-              <>
-                <Form.Group controlId="formFileMultiple" className="mb-3">
-                  <Form.Label>Seleccione las Imagenes</Form.Label>
-                  <Form.Control
-                    type="file"
-                    multiple
-                    onChange={handleFileChange}
-                  />
-                </Form.Group>
-                <Button
-                  variant="primary"
-                  onClick={handleAddImages}
-                  disabled={selectedImagenes.length === 0 || !selectedColor}
-                  className="mb-5"
-                >
-                  <IoMdAdd size={22} />
-                  Añadir Imagenes
-                </Button>
-              </>
-            )}
+            {colorEntries.map((entry) => {
+              const draft = variationDrafts[entry.colorId] || INITIAL_VARIATION_DRAFT;
 
-            {imagenes.length > 0 && (
-              <>
-                <div className="form_image-preview">
-                  {imagenes.map((image, index) => (
-                    <div key={index} className="form_image-item">
-                      <img
-                        src={URL.createObjectURL(image.archivo)}
-                        alt={`Imagen ${index + 1}`}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-            <br />
-            {colorsToview.length > 0 && (
-              <>
-                <p>Colores disponibles</p>
-                <div className="form_color-preview">
-                  {colorsToview.map((color, index) => (
-                    <div
-                      key={index}
-                      style={{ display: "flex", alignItems: "center" }}
-                    >
+              return (
+                <div
+                  key={entry.colorId}
+                  style={{
+                    border: "1px solid #ebebeb",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginBottom: "24px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <div
                         style={{
-                          width: "30px",
-                          height: "30px",
-                          backgroundColor: color.codigo_hex,
-                          borderRadius: "3px",
-                          marginRight: "8px",
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "4px",
                           border: "1px solid #ccc",
+                          backgroundColor: entry.colorOption.color,
                         }}
-                      ></div>
-                      <span>{color.nombre}</span>
+                      />
+                      <strong>{entry.colorOption.label}</strong>
                     </div>
-                  ))}
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => handleRemoveColor(entry.colorId)}
+                    >
+                      Eliminar color
+                    </Button>
+                  </div>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Imágenes del color</Form.Label>
+                    <Form.Control
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(event) => {
+                        handleAddImages(entry.colorId, event.target.files);
+                        event.target.value = "";
+                      }}
+                    />
+                    {entry.images.length > 0 && (
+                      <div className="form_image-preview" style={{ marginTop: "12px" }}>
+                        {entry.images.map((image) => (
+                          <div key={image.id} className="form_image-item">
+                            <Image
+                              src={image.preview}
+                              alt={entry.colorOption.label}
+                              thumbnail
+                            />
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginTop: "8px",
+                              }}
+                            >
+                              <Form.Check
+                                type="radio"
+                                label="Principal"
+                                name={`principal-${entry.colorId}`}
+                                checked={image.isPrincipal}
+                                onChange={() =>
+                                  handleSetPrincipalImage(entry.colorId, image.id)
+                                }
+                              />
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => handleRemoveImage(entry.colorId, image.id)}
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Variaciones (SKU)</Form.Label>
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: "12px",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                        alignItems: "end",
+                      }}
+                    >
+                      <Select
+                        options={tallasOptions}
+                        value={draft.talla}
+                        onChange={(option) =>
+                          handleDraftVariationChange(entry.colorId, "talla", option)
+                        }
+                        isLoading={tallasLoading}
+                        placeholder={
+                          tallasLoading
+                            ? "Cargando tallas..."
+                            : "Seleccione una talla"
+                        }
+                        isDisabled={tallasLoading || !!tallasError}
+                      />
+                      <Form.Control
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Precio"
+                        value={draft.precio}
+                        onChange={(event) =>
+                          handleDraftVariationChange(
+                            entry.colorId,
+                            "precio",
+                            event.target.value
+                          )
+                        }
+                      />
+                      <Form.Control
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Stock"
+                        value={draft.stock}
+                        onChange={(event) =>
+                          handleDraftVariationChange(
+                            entry.colorId,
+                            "stock",
+                            event.target.value
+                          )
+                        }
+                      />
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleAddVariation(entry.colorId)}
+                      >
+                        Agregar variación
+                      </Button>
+                    </div>
+                    {tallasError && (
+                      <div style={{ color: "red", marginTop: 5 }}>
+                        Error al cargar las tallas
+                      </div>
+                    )}
+                  </Form.Group>
+
+                  {entry.variations.length > 0 && (
+                    <div>
+                      <strong>Variaciones agregadas</strong>
+                      <div style={{ marginTop: "8px", display: "grid", gap: "8px" }}>
+                        {entry.variations.map((variation) => (
+                          <div
+                            key={variation.id}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              padding: "8px 12px",
+                              border: "1px solid #f0f0f0",
+                              borderRadius: "6px",
+                            }}
+                          >
+                            <div>
+                              <div>
+                                <strong>Talla:</strong> {variation.tallaNombre}
+                              </div>
+                              <div>
+                                <strong>Precio:</strong>{" "}
+                                {formateador.format(variation.precio)}
+                              </div>
+                              <div>
+                                <strong>Stock:</strong> {variation.stock}
+                              </div>
+                            </div>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() =>
+                                handleRemoveVariation(entry.colorId, variation.id)
+                              }
+                            >
+                              Quitar
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </>
-            )}
+              );
+            })}
 
-            <br />
-
-            <Form.Group controlId="tallaDisponible" className="mb-3">
-              <Form.Label>Tallas Disponibles</Form.Label>
-              <Select
-                isMulti
-                options={tallasOptions}
-                value={selectedTallas}
-                onChange={handleTallas}
-                isLoading={tallasLoading}
-                placeholder={
-                  tallasLoading ? "Cargando tallas..." : "Seleccione las tallas"
-                }
-                isDisabled={tallasLoading || !!tallasError}
+            <Form.Group className="mb-3" controlId="productName">
+              <Form.Label>Nombre del producto</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Ingrese el nombre del producto"
+                value={nombre}
+                onChange={(event) => setNombre(event.target.value)}
               />
-              {tallasError && (
-                <div style={{ color: "red", marginTop: 5 }}>
-                  Error al cargar los tallas
-                </div>
-              )}
             </Form.Group>
-            <Form.Group controlId="categoriasDisponible" className="mb-3">
-              <Form.Label>Categoria Disponibles</Form.Label>
+
+            <Form.Group className="mb-3" controlId="productDescription">
+              <Form.Label>Descripción del producto</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder="Ingrese la descripción del producto"
+                value={descripcion}
+                onChange={(event) => setDescripcion(event.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="categoriasDisponible" className="mb-4">
+              <Form.Label>Categoría</Form.Label>
               <Select
                 options={categoriasOptions}
                 value={selectedCategoria}
                 onChange={handleCategoria}
                 isLoading={categoriasLoading}
                 placeholder={
-                  categoriasLoading ? "Cargando categorias..." : "Seleccione las categorias"
+                  categoriasLoading
+                    ? "Cargando categorías..."
+                    : "Seleccione una categoría"
                 }
                 isDisabled={categoriasLoading || !!categoriasError}
               />
               {categoriasError && (
                 <div style={{ color: "red", marginTop: 5 }}>
-                  Error al cargar las categorias
+                  Error al cargar las categorías
                 </div>
               )}
             </Form.Group>
-            <Button variant="primary" type="submit" disabled={creandoProducto || cargandoProductos}>
-              {creandoProducto || cargandoProductos ? "Guardando..." : "Guardar"}
-            </Button>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+              <Button variant="secondary" onClick={handleModalClose}>
+                Cancelar
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                disabled={creandoProducto || cargandoProductos}
+              >
+                {creandoProducto || cargandoProductos ? "Guardando..." : "Guardar"}
+              </Button>
+            </div>
           </Form>
         </Modal.Body>
       </Modal>
@@ -396,3 +714,4 @@ const ModalCrear = ({ handleClose, show }) => {
 };
 
 export default ModalCrear;
+

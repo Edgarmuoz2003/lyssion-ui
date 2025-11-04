@@ -1,12 +1,18 @@
 import { gql } from "@apollo/client";
 
+// ACTUALIZADO: Mutación para crear productos con la nueva estructura anidada.
 export const CREATE_PRODUCTS = gql`
-  mutation CreateProducts($input: ProductoInput!) {
+  mutation CreateProducts($input: CreateProductoInput!) {
     createProducto(input: $input) {
       id
       nombre
       descripcion
-      precio
+      # Puedes pedir los datos que acabas de crear para actualizar el estado de tu app
+      variaciones {
+        id
+        precio
+        stock
+      }
     }
   }
 `;
@@ -18,7 +24,7 @@ export const DELETE_PRODUCTS = gql`
 `;
 
 export const CREATE_COLORS = gql`
-  mutation CreateColors($nombre: String!, $codigo_hex: String!) {
+  mutation CreateColors($nombre: String!, $codigo_hex: String) {
     createColor(nombre: $nombre, codigo_hex: $codigo_hex) {
       id
       nombre
@@ -79,7 +85,7 @@ export const DELETE_USUARIO = gql`
 `;
 
 export const MAKE_LOGIN = gql`
-  mutation makeLokin($data: inputLogin!) {
+  mutation makeLogin($data: inputLogin!) {
     login(data: $data) {
       user {
         nombre
@@ -91,7 +97,7 @@ export const MAKE_LOGIN = gql`
 `;
 
 export const CREATE_CLIENTE = gql`
-  mutation createUsuario($input: ClienteInput!) {
+  mutation createCliente($input: ClienteInput!) {
     createCliente(input: $input) {
       id
       nombre
@@ -106,10 +112,12 @@ export const CREATE_CLIENTE = gql`
   }
 `;
 
+// ACTUALIZADO: Mutación para crear órdenes (pedidos) con la nueva estructura de items.
 export const CREATE_PEDIDO = gql`
   mutation createOrden($input: OrdenInput!) {
     createOrden(input: $input) {
       id
+      numeroOrden
       fecha
       total
       estado
@@ -117,23 +125,12 @@ export const CREATE_PEDIDO = gql`
         id
         nombre
         apellido
-        documento
-        email
-        direccion
-        telefono
-        departamento
-        ciudad
       }
-      productos {
-        id
-        precioUnitario
-        cantidad
-        color
-        talla
-        producto {
-          id
-          nombre
-          precio
+      items {
+        id # ID de la ProductoVariacion
+        ProductoOrden {
+          cantidad
+          precioUnitario
         }
       }
     }
@@ -154,3 +151,4 @@ export const DELETE_ORDEN = gql`
     deleteOrden(id: $id)
   }
 `;
+

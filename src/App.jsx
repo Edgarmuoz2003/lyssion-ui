@@ -41,7 +41,6 @@ const DetallesPedido = lazy(() => import("./components/detallesPedido"));
 
 function App() {
   // Inicializa los estados globales (Zustand)
-  useColoresStore();
   useTallasStore();
   useCategoriasStore();
   useProductosStore();

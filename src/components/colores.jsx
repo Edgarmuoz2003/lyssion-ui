@@ -5,19 +5,16 @@ import { FaSave, FaTrash, FaArrowLeft } from "react-icons/fa";
 import { useMutation } from "@apollo/client";
 import { CREATE_COLORS, DELETE_COLORS } from "../graphql/mutations/productMutatios";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
-import { useMainStore } from "../store/useMainStore";
 import { useColoresStore } from "../utils/useColoresStore";
 import { Link } from "react-router-dom";
+
 
 const Colores = () => {
   const [codigo_hex, setCodigo_hex_] = useState("#000000");
   const [nombre, setNombre_] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const addColor = useMainStore((state) => state.addColor);
-  const delColor = useMainStore((state) => state.delColor);
-  const colores = useMainStore((state) => state.colores);
-  
-  const { loading, error  }= useColoresStore();
+  const { colores, loading, error, refetch } = useColoresStore();
+
 
   const handleShowForm = () => {
     setShowForm(!showForm);
@@ -26,7 +23,6 @@ const Colores = () => {
   const [createColor] = useMutation(CREATE_COLORS, {
     onCompleted: (data) => {
       if (data.createColor) {
-        addColor(data.createColor);
         mostrarExito("Color agregado correctamente");
         setCodigo_hex_("#000000");
         setNombre_("");
@@ -62,10 +58,11 @@ const Colores = () => {
           codigo_hex,
         },
       });
+      refetch();
         setShowForm(false);
     } catch (error) {
-      mostrarError("Error al agregar el color: " + error.message);
-      throw new Error("Error al crear el producto: " + error.message);
+      console.error("Error al crear color:", error);
+      mostrarError("A ocurrido un error al agregar el color" );
     }
   };
 
@@ -74,9 +71,10 @@ const Colores = () => {
       await deleteColor({
         variables: { id },
       });
-      delColor(id);
+      refetch();
     } catch (error) {
-      mostrarError("Error al eliminar el color: " + error.message);
+      console.error("Error al eliminar el color:", error);
+      mostrarError("A ocurrido un error al eliminar el color");
     }
   }
 

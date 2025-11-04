@@ -14,7 +14,7 @@ export const useMainStore = create((set, get) => ({
   categorias: [],
   usuarios: [],
   imgenFondo: null,
-  ordenes: [], // ✅ Correcto, ya está inicializado como array vacío.
+  ordenes: [], 
 
   setCategorias: (categorias) => set({ categorias }),
   setTallas: (tallas) => set({ tallas }),
