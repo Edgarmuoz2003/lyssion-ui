@@ -1,17 +1,48 @@
-import { useEffect } from "react";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { GET_TALLAS } from "../../graphql/queries/productQueries";
-import { useMainStore } from "../../store/useMainStore";
+import { CREATE_TALLAS, DELETE_TALLAS } from "../../graphql/mutations/productMutatios";
 
 export function useTallasStore() {
-  const setTallas = useMainStore((state) => state.setTallas);
-  const { data, loading, error } = useQuery(GET_TALLAS);
+  const { data, loading, error, refetch } = useQuery(GET_TALLAS);
 
-  useEffect(() => {
-    if (data?.tallas) {
-      setTallas(data.tallas);
-    }
-  }, [data, setTallas]);
+  const [createTalla] = useMutation(CREATE_TALLAS, {
+    update: (cache, { data }) => {
+      const newTalla = data?.createTalla;
+      if (!newTalla) return;
 
-  return { loading, error };
+      const existing = cache.readQuery({ query: GET_TALLAS });
+      const tallas = existing?.tallas ?? [];
+
+      cache.writeQuery({
+        query: GET_TALLAS,
+        data: { tallas: [...tallas, newTalla] },
+      });
+    },
+  });
+
+    const [deleteTalla] = useMutation(DELETE_TALLAS, {
+      update: (cache, { data }) => {
+        const removed = data?.deleteTalla;
+        if (!removed) return;
+  
+        const existing = cache.readQuery({ query: GET_TALLAS });
+        const tallas = existing?.tallas ?? [];
+  
+        cache.writeQuery({
+          query: GET_TALLAS,
+          data: {
+            tallas: tallas.filter((talla) => talla.id !== removed.id),
+          },
+        });
+      },
+    });
+
+  return {
+    tallas: data?.tallas || [],
+    loading,
+    error,
+    refetch,
+    createTalla,
+    deleteTalla,
+  };
 }

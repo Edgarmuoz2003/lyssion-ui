@@ -2,50 +2,21 @@ import { useState } from "react";
 import { Container, Button, Form, Card } from "react-bootstrap";
 import { IoMdAdd } from "react-icons/io";
 import { FaSave, FaTrash, FaArrowLeft } from "react-icons/fa";
-import { useMutation } from "@apollo/client";
-import { CREATE_TALLAS, DELETE_TALLAS } from "../graphql/mutations/productMutatios";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
-import { useMainStore } from "../store/useMainStore";
-import { useTallasStore } from "../utils/useTallasStore";
+import { useTallasStore } from "../utils/hooks/useTallasStore";
 import { Link } from "react-router-dom";
-
+import SpinnerComponet from "../layouts/spinnerComponent";
+import AlertComponent from "../layouts/alertComponent"
 
 const Tallas = () => {
   const [nombre, setNombre_] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const addTallas = useMainStore((state) => state.addTalla);
-  const delTalla = useMainStore((state) => state.delTalla);
-  const tallas = useMainStore((state) => state.tallas);
-  
-  const { loading, error  }= useTallasStore();
+  const { tallas, loading, error, refetch, createTalla, deleteTalla } =
+    useTallasStore();
 
   const handleShowForm = () => {
     setShowForm(!showForm);
   };
-
-  const [createTalla] = useMutation(CREATE_TALLAS, {
-    onCompleted: (data) => {
-      if (data.createTalla) {
-        addTallas(data.createTalla);
-        mostrarExito("Talla agregado correctamente");
-        setNombre_("");
-      }
-    },
-    onError: (error) => {
-      mostrarError(error.message);
-    },
-  });
-
-  const [deleteTalla] = useMutation(DELETE_TALLAS, {
-    onCompleted: (data) => {
-      if (data.deleteTalla) {
-        mostrarExito("Talla eliminado correctamente");
-      }
-    },
-    onError: (error) => {
-      mostrarError(error.message);
-    },
-  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,10 +31,12 @@ const Tallas = () => {
           nombre,
         },
       });
-        setShowForm(false);
+      mostrarExito("Talla agregada correctamente");
+      setNombre_("");
+      setShowForm(false);
     } catch (error) {
-      mostrarError("Error al agregar el talla: " + error.message);
-      throw new Error("Error al crear la talla: " + error.message);
+      console.error("Error al agregar talla" + error);
+      mostrarError("A ocurrido un error al agregar la talla");
     }
   };
 
@@ -72,14 +45,21 @@ const Tallas = () => {
       await deleteTalla({
         variables: { id },
       });
-      delTalla(id);
+      mostrarExito("Se a eliminado la talla")
     } catch (error) {
-      mostrarError("Error al eliminar la talla: " + error.message);
+      console.error("A ocurrido un error al eliminar la talla" + error)
+      mostrarError("A ocurrido un error al eliminar la talla");
     }
-  }
+  };
 
-  if (loading) return <p>Cargando tallas...</p>;
-  if (error) return <p>Error al cargar tallas: {error.message}</p>;
+  if (loading) return <SpinnerComponet />;
+  if (error) return <AlertComponent
+    variant="danger"
+    heading="Error al cargar tallas"
+    actions={<Button onClick={() => refetch()}>Reintentar</Button>}
+  >
+    {error.message}           
+  </AlertComponent>;
 
   return (
     <>
@@ -120,7 +100,7 @@ const Tallas = () => {
             </Card>
           </div>
         )}
-        <div className="tallas-list"> 
+        <div className="tallas-list">
           <h2 className="text-center">Lista de Tallas</h2>
           <table className="table table-striped">
             <thead>
@@ -133,9 +113,11 @@ const Tallas = () => {
               {tallas.map((talla) => (
                 <tr key={talla.id}>
                   <td>
-                    <Button 
-                    variant="danger" size="sm"
-                    onClick={() => handleDelete(talla.id)}>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDelete(talla.id)}
+                    >
                       <FaTrash />
                     </Button>
                   </td>
