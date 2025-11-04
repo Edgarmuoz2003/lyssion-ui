@@ -24,21 +24,21 @@ export function useColoresStore() {
   });
 
   const [deleteColor] = useMutation(DELETE_COLORS, {
-    update: (cache, { data }) => {
-      const removed = data?.deleteColor;
-      if (!removed) return;
+  update: (cache, { data, variables }) => {
+    const removedId = data?.deleteColor ?? variables?.id;
+    if (!removedId) return;
 
-      const existing = cache.readQuery({ query: GET_COLORS });
-      const colores = existing?.colores ?? [];
-
-      cache.writeQuery({
-        query: GET_COLORS,
-        data: {
-          colores: colores.filter((color) => color.id !== removed.id),
+    cache.modify({
+      fields: {
+        colores(existingRefs = [], { readField }) {
+          return existingRefs.filter(
+            (ref) => readField("id", ref) !== removedId
+          );
         },
-      });
-    },
-  });
+      },
+    });
+  },
+});
   return {
     colores: data?.colores || [],
     loading,

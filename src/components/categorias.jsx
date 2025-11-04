@@ -66,7 +66,7 @@ const Categorias = () => {
     
     <>
       <Container>
-          <div className="d-flex align-items-center">
+          <div className="d-flex align-items-center mt-5 mb-4">
             <Link to="/Configuraciones" className="btn btn-light border me-3">
               <FaArrowLeft />
             </Link>

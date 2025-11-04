@@ -26,17 +26,17 @@ export function useCategoriasStore() {
   });
 
   const [deleteCategoria] = useMutation(DELETE_CATEGORIAS, {
-    update: (cache, { data }) => {
-      const removed = data?.deleteCategoria;
-      if (!removed) return;
+    update: (cache, { data, variables }) => {
+      const removedId = data?.deleteCategoria ?? variables?.id;
+      if (!removedId) return;
 
-      const existing = cache.readQuery({ query: GET_CATEGORIAS });
-      const categorias = existing?.categorias ?? [];
-
-      cache.writeQuery({
-        query: GET_CATEGORIAS,
-        data: {
-          categorias: categorias.filter((categoria) => categoria.id !== removed.id),
+      cache.modify({
+        fields: {
+          categorias(existingRefs = [], { readField }) {
+            return existingRefs.filter(
+              (ref) => readField("id", ref) !== removedId
+            );
+          },
         },
       });
     },
