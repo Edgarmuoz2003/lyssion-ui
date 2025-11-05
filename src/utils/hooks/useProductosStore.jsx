@@ -1,19 +1,46 @@
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { useMainStore } from "../../store/useMainStore";
-import { useEffect } from "react";
-import { GET_PRODUCTOS } from "../../graphql/queries/productQueries";
+import {
+  GET_PRODUCTOS,
+  GET_ULTIMOS_PRODUCTOS,
+} from "../../graphql/queries/productQueries";
+import {
+  CREATE_PRODUCTS,
+  DELETE_PRODUCTS,
+} from "../../graphql/mutations/productMutatios";
 
 export function useProductosStore() {
-  const setProductos = useMainStore((state) => state.setProductos);
-  const { data, loading, error } = useQuery(GET_PRODUCTOS, {
-    variables: { where: {} }, 
+  const productoWhere = useMainStore((s) => s.productoWhere);
+  const setProductoWhere = useMainStore((s) => s.setProductoWhere);
+  const { data, loading, error, refetch } = useQuery(GET_PRODUCTOS, {
+    variables: { where: productoWhere ?? {} },
+    fetchPolicy: "cache-and-network",
   });
 
-  useEffect(() => {
-    if (data?.productos) {
-      setProductos(data.productos);
-    }
-  }, [data, setProductos]);
+  const [createProducto] = useMutation(CREATE_PRODUCTS, {
+    awaitRefetchQueries: true,
+    refetchQueries: [
+      { query: GET_PRODUCTOS, variables: { where: productoWhere ?? {} } },
+      { query: GET_ULTIMOS_PRODUCTOS },
+    ],
+  });
 
-  return { loading, error };
+  const [deleteProducto] = useMutation(DELETE_PRODUCTS, {
+    awaitRefetchQueries: true,
+    refetchQueries: [
+      { query: GET_PRODUCTOS, variables: { where: productoWhere ?? {} } },
+      { query: GET_ULTIMOS_PRODUCTOS },
+    ],
+  });
+
+  return {
+    productos: data?.productos || [],
+    loading,
+    error,
+    productoWhere,
+    setProductoWhere,
+    createProducto,
+    deleteProducto,
+    refetch,
+  };
 }

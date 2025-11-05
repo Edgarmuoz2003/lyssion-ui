@@ -4,7 +4,7 @@ import { Container, Card, Table, Alert, Button } from "react-bootstrap";
 
 const DetallesPedido = () => {
   const { id } = useParams();
-  const orden = useMainStore((state) => state.getOrdenById(id));
+  const orden = useMainStore(useMainStore.getState().getOrdenById(id));
 
   const formatPrice = (price) => {
     if (typeof price !== 'number') return '$0';

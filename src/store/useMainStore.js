@@ -8,39 +8,20 @@ export const useMainStore = create((set, get) => ({
     user: savedUser,
     token: savedToken || null,
   },
-  productos: [],
-  colores: [],
-  tallas: [],
-  categorias: [],
+
+
+  // otros
+  productoWhere: {},
   usuarios: [],
   imgenFondo: null,
-  ordenes: [], 
+  ordenes: [],
 
-  setCategorias: (categorias) => set({ categorias }),
-  setTallas: (tallas) => set({ tallas }),
-  setColores: (colores) => set({ colores }),
-  setProductos: (productos) => set({ productos }),
+  setProductoWhere: (where) => set({ productoWhere: where ?? {} }),
   setUsuarios: (usuarios) => set({ usuarios }),
   setImagenFondo: (imagenFondo) => set({ imagenFondo }),
   setOrdenes: (ordenes) => set({ ordenes }),
   setLoginData: (loginData) => set({ loginData }),
 
-  addProducto: (producto) =>
-    set((state) => ({
-      productos: [...state.productos, producto],
-    })),
-  addColor: (color) =>
-    set((state) => ({
-      colores: [...state.colores, color],
-    })),
-  addTalla: (talla) =>
-    set((state) => ({
-      tallas: [...state.tallas, talla],
-    })),
-  addCategoria: (categoria) =>
-    set((state) => ({
-      categorias: [...state.categorias, categoria],
-    })),
   addUsuario: (usuario) =>
     set((state) => ({
       usuarios: [...state.usuarios, usuario],
@@ -56,31 +37,16 @@ export const useMainStore = create((set, get) => ({
       ),
     })),
 
-  delColor: (id) =>
-    set((state) => ({
-      colores: state.colores.filter((color) => color.id !== id),
-    })),
-  delTalla: (id) =>
-    set((state) => ({
-      tallas: state.tallas.filter((talla) => talla.id !== id),
-    })),
-  delCategoria: (id) =>
-    set((state) => ({
-      categorias: state.categorias.filter((categoria) => categoria.id !== id),
-    })),
   delUsuario: (id) =>
     set((state) => ({
       usuarios: state.usuarios.filter((usuario) => usuario.id !== id),
-    })),
-   delProducto: (id) =>
-    set((state) => ({
-      productos: state.productos.filter((producto) => producto.id !== id),
     })),
   delOrden: (id) =>
     set((state) => ({
       ordenes: state.ordenes.filter((orden) => orden.id !== id),
     })),
-    getOrdenById: (id) =>
-    get().ordenes.find((orden) => orden.id === id),
-  }));
- 
+  // Se corrige la definición para que la función sea estable.
+  // Ahora, la función en el store es fija, y se le pasa el estado cuando se usa.
+  getOrdenById: (id) => (state) =>
+    state.ordenes.find((orden) => orden.id === id),
+}));

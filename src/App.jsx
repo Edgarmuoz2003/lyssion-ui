@@ -7,7 +7,6 @@ import { PrivateRoute } from "./utils/privateRoutes";
 import SpinnerComponent from "./layouts/spinnerComponent";
 
 // 🪣 Zustand stores
-import { useProductosStore } from "./utils/hooks/useProductosStore";
 import { useUsuariosStore } from "./utils/hooks/useUsuariosStore";
 import { useLogindata } from "./utils/hooks/useLoginData";
 import { useOrdenesStore } from "./utils/hooks/useOrdenesStore";
@@ -39,7 +38,6 @@ const DetallesPedido = lazy(() => import("./components/detallesPedido"));
 
 function App() {
   // Inicializa los estados globales (Zustand)
-  useProductosStore();
   useUsuariosStore();
   useLogindata();
   useOrdenesStore();

@@ -1,57 +1,136 @@
 import { Container, Button, Dropdown, Row, Col } from "react-bootstrap";
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import styled from "styled-components";
 import { IoMdAdd } from "react-icons/io";
 import { FaCog, FaSearch } from "react-icons/fa";
 import ModalCrear from "../forms/crearProducto";
-import { useMainStore } from "../store/useMainStore";
 import ProductCard from "../layouts/poducto";
+import { useProductosStore } from "../utils/hooks/useProductosStore";
+import SpinnerComponet from "../layouts/spinnerComponent";
+import AlertComponent from "../layouts/alertComponent";
+import DrawerComponent from "../layouts/drawerComponet";
+
+const getNombreFilterValue = (where) => {
+  if (!where || typeof where !== "object") return "";
+  const { nombre } = where;
+  if (!nombre) return "";
+  if (typeof nombre === "string") return nombre;
+  if (typeof nombre === "object") {
+    if (typeof nombre.contains === "string") return nombre.contains;
+    if (typeof nombre.containsi === "string") return nombre.containsi;
+  }
+  return "";
+};
+
+const CogIconButton = styled.span.attrs({
+  role: "button",
+  tabIndex: 0,
+})`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+
+  &:hover {
+    color: #0d6efd;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+`;
 
 const Configuraciones = () => {
   const [show, setShow] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleToggleDrawer = useCallback(() => {
+    setIsOpen((prevOpen) => !prevOpen);
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const handleIconKeyDown = useCallback(
+    (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleToggleDrawer();
+      }
+    },
+    [handleToggleDrawer]
+  );
+
+  const {
+    productos,
+    loading,
+    error,
+    refetch,
+    productoWhere,
+    setProductoWhere,
+  } = useProductosStore();
+  const [searchTerm, setSearchTerm] = useState(() =>
+    getNombreFilterValue(productoWhere)
+  );
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  // 1. Obtenemos la lista completa de productos desde Zustand.
-  const todosLosProductos = useMainStore((state) => state.productos);
+  useEffect(() => {
+    const valueFromStore = getNombreFilterValue(productoWhere);
+    if (valueFromStore !== searchTerm) {
+      setSearchTerm(valueFromStore);
+    }
+  }, [productoWhere, searchTerm]);
 
-  // 2. Filtramos la lista de productos en el cliente cada vez que el término de búsqueda o la lista cambian.
-  // `useMemo` optimiza para que el filtrado no se ejecute en cada render, solo cuando es necesario.
   const productosFiltrados = useMemo(() => {
     if (!searchTerm.trim()) {
-      return todosLosProductos;
+      return productos;
     }
-    return todosLosProductos.filter((producto) =>
+    return productos.filter((producto) =>
       producto.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm, todosLosProductos]);
+  }, [productos, searchTerm]);
 
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+    const trimmed = value.trim();
+    setProductoWhere(trimmed ? { nombre: { contains: trimmed } } : {});
+  };
+
+  if (loading) return <SpinnerComponet />;
+  if (error)
+    return (
+      <AlertComponent
+        variant="danger"
+        heading="Error al cargar productos"
+        actions={<Button onClick={() => refetch()}>Reintentar</Button>}
+      >
+        {error.message}
+      </AlertComponent>
+    );
 
   return (
     <>
       <Container>
         <div className="productos_header">
-          <Dropdown>
-            <Dropdown.Toggle variant="link" id="dropdown-basic">
-              <FaCog size={24} style={{ color: "black" }} />
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu>
-              <Dropdown.Item href="/Colores">Colores</Dropdown.Item>
-              <Dropdown.Item href="/Tallas">Tallas</Dropdown.Item>
-              <Dropdown.Item href="/Categorias">Categorías</Dropdown.Item>
-              <Dropdown.Item href="/Usuarios">Usuarios</Dropdown.Item>
-              <Dropdown.Item href="/PedidosList">Ordenes de pedido</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+          <CogIconButton onClick={handleToggleDrawer} onKeyDown={handleIconKeyDown}>
+            <FaCog size={24} />
+          </CogIconButton>
+          
           <div className="input-icon">
             <FaSearch size={18} className="icono-buscar" />
             <input
               type="text"
               placeholder="Buscar por nombre..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
           <Button onClick={handleShow} className="btn-crearProducto">
@@ -65,7 +144,14 @@ const Configuraciones = () => {
         {productosFiltrados.length > 0 ? (
           <Row>
             {productosFiltrados.map((producto) => (
-              <Col key={producto.id} sm={12} md={6} lg={4} xl={3} className="mt-5">
+              <Col
+                key={producto.id}
+                sm={12}
+                md={6}
+                lg={4}
+                xl={3}
+                className="mt-5"
+              >
                 <ProductCard producto={producto} />
               </Col>
             ))}
@@ -74,6 +160,8 @@ const Configuraciones = () => {
           <p>No se encontraron productos.</p>
         )}
       </Container>
+
+      <DrawerComponent open={isOpen} onClose={handleCloseDrawer} />
     </>
   );
 };
