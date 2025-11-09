@@ -34,15 +34,10 @@ const ProductCard = ({ producto }) => {
   const minPrice =
     variationPrices.length > 0 ? Math.min(...variationPrices) : null;
 
-  const colores =
-    producto.coloresDisponibles
-      ?.map((colorEntry) => colorEntry?.color)
-      .filter((color) => Boolean(color?.id)) || [];
-
   return (
     <Link
       to={`/detalles/${producto.id}`}
-      style={{ textDecoration: "none", color: "inherit" }}
+      style={{ textDecoration: "none", color: "inherit", width: "100%", display: "block" }}
     >
       <Card className="h-100" style={{ width: "100%" }}>
         {imageUrl ? (
@@ -66,31 +61,6 @@ const ProductCard = ({ producto }) => {
             {producto.nombre}
           </Card.Title>
 
-          {colores.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                gap: "6px",
-                margin: "8px 0 12px",
-                flexWrap: "wrap",
-              }}
-            >
-              {colores.map((color) => (
-                <div
-                  key={color.id}
-                  title={color.nombre}
-                  style={{
-                    width: "18px",
-                    height: "18px",
-                    borderRadius: "50%",
-                    border: "1px solid #d9d9d9",
-                    backgroundColor: color.codigo_hex || "#ffffff",
-                  }}
-                />
-              ))}
-            </div>
-          )}
-
           <Card.Text as="p" className="producto-card-precio mt-auto">
             {minPrice !== null
               ? currencyFormatter.format(minPrice)
@@ -103,4 +73,3 @@ const ProductCard = ({ producto }) => {
 };
 
 export default ProductCard;
-

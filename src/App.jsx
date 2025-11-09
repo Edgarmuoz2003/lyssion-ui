@@ -18,7 +18,7 @@ import KartButton from "./layouts/kartButton";
 import WhatsappButton from "./layouts/whatsappButton";
 
 // 💨 Lazy load para las páginas
-const Home = lazy(() => import("./components/home"));
+const Home = lazy(() => import("./components/home/home"));
 const Login = lazy(() => import("./components/login"));
 const Pijamas = lazy(() => import("./components/pijamas"));
 const Casual = lazy(() => import("./components/casual"));

@@ -12,6 +12,8 @@ import { IoMdAdd } from "react-icons/io";
 import { CREATE_PRODUCTS } from "../graphql/mutations/productMutatios";
 import { useMainStore } from "../store/useMainStore";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
+import { useProductosStore } from "@/utils/hooks/useProductosStore";
+import SpinnerComponet from "@/layouts/spinnerComponent";
 
 const INITIAL_VARIATION_DRAFT = { talla: null, precio: "", stock: "" };
 
@@ -65,38 +67,40 @@ const ModalCrear = ({ handleClose, show }) => {
     error: categoriasError,
   } = useQuery(GET_CATEGORIAS);
 
-  const setProductos = useMainStore((state) => state.setProductos);
+  // const setProductos = useMainStore((state) => state.setProductos);
 
-  const [refrescarProductos, { loading: cargandoProductos }] = useLazyQuery(
-    GET_PRODUCTOS,
-    {
-      fetchPolicy: "network-only",
-      onCompleted: (data) => {
-        setProductos(data.productos);
-        mostrarExito("Producto creado y lista actualizada.");
-        handleModalClose();
-      },
-      onError: (error) => {
-        mostrarError(
-          "Producto creado, pero falló al refrescar la lista.",
-          error.message
-        );
-        handleModalClose();
-      },
-    }
-  );
+  // const [refrescarProductos, { loading: cargandoProductos }] = useLazyQuery(
+  //   GET_PRODUCTOS,
+  //   {
+  //     fetchPolicy: "network-only",
+  //     onCompleted: (data) => {
+  //       setProductos(data.productos);
+  //       mostrarExito("Producto creado y lista actualizada.");
+  //       handleModalClose();
+  //     },
+  //     onError: (error) => {
+  //       mostrarError(
+  //         "Producto creado, pero falló al refrescar la lista.",
+  //         error.message
+  //       );
+  //       handleModalClose();
+  //     },
+  //   }
+  // );
 
-  const [createProducto, { loading: creandoProducto }] = useMutation(
-    CREATE_PRODUCTS,
-    {
-      onCompleted: () => {
-        refrescarProductos();
-      },
-      onError: (error) => {
-        mostrarError("Error al crear el producto", error.message);
-      },
-    }
-  );
+  // const [createProducto, { loading: creandoProducto }] = useMutation(
+  //   CREATE_PRODUCTS,
+  //   {
+  //     onCompleted: () => {
+  //       refrescarProductos();
+  //     },
+  //     onError: (error) => {
+  //       mostrarError("Error al crear el producto", error.message);
+  //     },
+  //   }
+  // );
+
+  const {createProducto, creando, loading } = useProductosStore();
 
   const coloresOptions =
     coloresData?.colores.map((color) => ({
@@ -338,7 +342,7 @@ const ModalCrear = ({ handleClose, show }) => {
     );
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (colorEntries.length === 0) {
@@ -401,10 +405,20 @@ const ModalCrear = ({ handleClose, show }) => {
       colores,
     };
 
-    createProducto({
+    try {
+      await createProducto({
       variables: { input },
     });
+    mostrarExito('Producto creado con éxito')
+    handleModalClose()
+    } catch (error) {
+      console.error('Error al crear el producto:', error);
+      mostrarError('Error al crear el producto', error.message);
+      handleModalClose()
+    }
+   
   };
+
 
   return (
     <>
@@ -701,9 +715,9 @@ const ModalCrear = ({ handleClose, show }) => {
               <Button
                 variant="primary"
                 type="submit"
-                disabled={creandoProducto || cargandoProductos}
+                disabled={creando || loading}
               >
-                {creandoProducto || cargandoProductos ? "Guardando..." : "Guardar"}
+                {creando || loading ? <SpinnerComponet/> : "Guardar"}
               </Button>
             </div>
           </Form>

@@ -17,7 +17,7 @@ export function useProductosStore() {
     fetchPolicy: "cache-and-network",
   });
 
-  const [createProducto] = useMutation(CREATE_PRODUCTS, {
+  const [createProducto, { loading: creandoProducto }] = useMutation(CREATE_PRODUCTS, {
     awaitRefetchQueries: true,
     refetchQueries: [
       { query: GET_PRODUCTOS, variables: { where: productoWhere ?? {} } },
@@ -35,6 +35,7 @@ export function useProductosStore() {
 
   return {
     productos: data?.productos || [],
+    creando: creandoProducto,
     loading,
     error,
     productoWhere,

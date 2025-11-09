@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { GET_ULTIMOS_PRODUCTOS } from "../../../graphql/queries/productQueries";
 import Marquee from "react-fast-marquee";
 import ProductCard from "../../../layouts/poducto";
+import SpinnerComponet from "@/layouts/spinnerComponent";
+import AlertComponent from "@/layouts/alertComponent";
 
 
 const Loultimo = () => {
@@ -15,16 +17,21 @@ const Loultimo = () => {
     return () => clearTimeout(timer); 
   }, []);
 
-  const { data, loading, error } = useQuery(GET_ULTIMOS_PRODUCTOS, {
+  const { data, loading, error, refetch } = useQuery(GET_ULTIMOS_PRODUCTOS, {
     fetchPolicy: "network-only",
   });
 
-  
-  if (loading) return <p>Cargando...</p>;
-  if (error) {
-    console.error("Error al cargar los últimos productos:", error);
-    return <p>Error al cargar productos. Por favor, intenta de nuevo más tarde.</p>;
-  }
+   if (loading) return <SpinnerComponet />;
+  if (error)
+    return (
+      <AlertComponent
+        variant="danger"
+        heading="Error al cargar productos"
+        actions={<Button onClick={() => refetch()}>Reintentar</Button>}
+      >
+        {error.message}
+      </AlertComponent>
+    );
   return (
     <>
       <section className="section-lo-ultimo-home bg-light">
