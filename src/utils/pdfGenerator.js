@@ -1,8 +1,14 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { normalizeOrdenProductos } from "./normalizeOrden";
 
-export const generateOrderPDF = (orden) => {
+export const generateOrderPDF = (orden, productosNormalizados = null) => {
   if (!orden) return;
+
+  const productos =
+    (Array.isArray(productosNormalizados) && productosNormalizados.length > 0
+      ? productosNormalizados
+      : normalizeOrdenProductos(orden)) ?? [];
 
   const doc = new jsPDF();
 
@@ -35,9 +41,9 @@ export const generateOrderPDF = (orden) => {
   const tableColumn = ["Producto", "Cantidad", "Precio Unit.", "Total"];
   const tableRows = [];
 
-  orden.productos.forEach((prod) => {
+  productos.forEach((prod) => {
     const productoData = [
-      `${prod.producto.nombre} Talla: ${prod.talla} Color: ${prod.color}`,
+      `${prod.nombre} Talla: ${prod.talla} Color: ${prod.color}`,
       prod.cantidad,
       `$${prod.precioUnitario.toLocaleString()}`,
       `$${(prod.precioUnitario * prod.cantidad).toLocaleString()}`,

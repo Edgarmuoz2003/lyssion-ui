@@ -1,75 +1,78 @@
 import { Modal, Button, Form } from "react-bootstrap";
 import Select from "react-select";
 import { ESTADO_OPTIONS } from "../utils/enums";
-import { UPDATE_ORDEN_ESTADO } from "../graphql/mutations/productMutatios";
-import { useMutation } from "@apollo/client";
-import { useState, useEffect } from "react";
-import { useMainStore } from "../store/useMainStore";
+import { useEffect, useMemo, useState } from "react";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { FaPrint, FaSave, FaTimes } from "react-icons/fa";
 import { generateOrderPDF } from "../utils/pdfGenerator";
+import { useOrdenesStore } from "../utils/hooks/useOrdenesStore";
+import { useVariacionesProductoMap } from "../utils/hooks/useVariacionesProductoMap";
+import { normalizeOrdenProductos } from "../utils/normalizeOrden";
 
-// ✅ Se mueven las opciones fuera del componente para que no se redeclaren en cada render.
-//    Esto también soluciona la advertencia del linter en el `useEffect`.
 const estadoOptions = [
   { value: ESTADO_OPTIONS.Pendiente, label: "Pendiente" },
   { value: ESTADO_OPTIONS.Proceso, label: "En Proceso" },
   { value: ESTADO_OPTIONS.Despachado, label: "Despachado" },
 ];
-const PedidoView = ({ show, setShow, orden }) => {
+
+const PedidoView = ({ show, setShow, orden, onOrdenUpdated }) => {
   const [selectedEstado, setSelectedEstado] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
-  const updateOrdenStore = useMainStore((state) => state.updateOrden);
-
-  const [updateOrdenEstado, { loading }] = useMutation(UPDATE_ORDEN_ESTADO, {
-    onCompleted: (data) => {
-      // Actualizamos el estado global en Zustand
-      updateOrdenStore(data.updateOrdenEstado);
-      mostrarExito("¡Estado de la orden actualizado!");
-      setHasChanges(false); // Desactivamos el botón de guardar
-      // Opcional: cerrar el modal tras el éxito
-      handleClose();
-    },
-    onError: (error) => {
-      mostrarError("Error al actualizar el estado", error.message);
-    },
+  const { updateOrdenEstado, actualizandoOrden } = useOrdenesStore({
+    skipQuery: true,
   });
+  const { variacionesMap } = useVariacionesProductoMap({ skip: !show });
 
   useEffect(() => {
     if (orden) {
-      // Encuentra el objeto de opción que coincide con el estado actual de la orden
-      const currentOption = estadoOptions.find(opt => opt.value === orden.estado);
-      setSelectedEstado(currentOption);
-      setHasChanges(false); // Resetea los cambios cuando la orden cambia
+      const currentOption = estadoOptions.find(
+        (opt) => opt.value === orden.estado
+      );
+      setSelectedEstado(currentOption ?? null);
+      setHasChanges(false);
     }
-  }, [orden]); // Ahora `estadoOptions` no es una dependencia porque es una constante externa.
+  }, [orden]);
 
   const handleClose = () => {
     setShow(false);
-    setHasChanges(false); // Descarta los cambios al cerrar
+    setHasChanges(false);
   };
 
   const handleEstadoChange = (selectedOption) => {
     setSelectedEstado(selectedOption);
-    // Comprueba si el nuevo estado es diferente al original
-    if (selectedOption.value !== orden.estado) {
-      setHasChanges(true);
-    } else {
+    if (!orden) return;
+
+    setHasChanges(selectedOption?.value !== orden.estado);
+  };
+
+  const handleSaveChanges = async () => {
+    if (!orden || !hasChanges || !selectedEstado) return;
+
+    try {
+      await updateOrdenEstado({
+        variables: { id: orden.id, estado: selectedEstado.value },
+      });
+      mostrarExito("¡Estado de la orden actualizado!");
       setHasChanges(false);
+      onOrdenUpdated?.();
+      handleClose();
+    } catch (error) {
+      mostrarError(
+        "Error al actualizar el estado",
+        error?.message ?? "Error desconocido"
+      );
     }
   };
 
-  const handleSaveChanges = () => {
-    if (!hasChanges || !selectedEstado) return;
-
-    updateOrdenEstado({
-      variables: { id: orden.id, estado: selectedEstado.value },
-    });
-  };
-
   const handlePrint = () => {
-    generateOrderPDF(orden);
+    if (orden) {
+      generateOrderPDF(orden, productosNormalizados);
+    }
   };
+
+  const productosNormalizados = useMemo(() => {
+    return normalizeOrdenProductos(orden, { variacionesMap });
+  }, [orden, variacionesMap]);
 
   return (
     <>
@@ -93,14 +96,14 @@ const PedidoView = ({ show, setShow, orden }) => {
                 </p>
                 <Form className="d-flex">
                   <Form.Label>Estado: </Form.Label>
-                  <Select 
+                  <Select
                     options={estadoOptions}
                     value={selectedEstado}
                     onChange={handleEstadoChange}
                     placeholder="Seleccione un estado"
                   />
                 </Form>
-             
+
                 <p>
                   <strong>Fecha:</strong>{" "}
                   {new Date(Number(orden.fecha)).toLocaleDateString()}
@@ -146,27 +149,26 @@ const PedidoView = ({ show, setShow, orden }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {orden.productos.map((prod) => (
+                  {productosNormalizados.map((prod) => (
                     <tr key={prod.id}>
                       <td>
-                        {prod.producto.nombre} talla {prod.talla} color{" "}
-                        {prod.color}
+                        {prod.nombre} talla {prod.talla} color {prod.color}
                       </td>
                       <td>{prod.cantidad}</td>
-                      <td>${prod.precioUnitario.toLocaleString()}</td>
+                      <td>${Number(prod.precioUnitario).toLocaleString()}</td>
                       <td>
                         $
-                        {(prod.precioUnitario * prod.cantidad).toLocaleString()}
+                        {Number(prod.precioUnitario * prod.cantidad).toLocaleString()}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-               <div className="d-flex justify-content-end">
+              <div className="d-flex justify-content-end">
                 <div>
                   <h5 className="text-end me-2">Total del Pedido</h5>
                   <div className="total-display-led">
-                    {orden.total.toLocaleString("es-CO", {
+                    {Number(orden.total).toLocaleString("es-CO", {
                       style: "currency",
                       currency: "COP",
                       minimumFractionDigits: 0,
@@ -181,7 +183,6 @@ const PedidoView = ({ show, setShow, orden }) => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          
           <Button variant="info" onClick={handlePrint}>
             <FaPrint /> Imprimir
           </Button>
@@ -191,11 +192,16 @@ const PedidoView = ({ show, setShow, orden }) => {
           <Button
             variant="primary"
             onClick={handleSaveChanges}
-            disabled={!hasChanges || loading}
+            disabled={!hasChanges || actualizandoOrden}
           >
-            {loading ? "Guardando..." : <><FaSave /> Guardar Cambios</>}
+            {actualizandoOrden ? (
+              "Guardando..."
+            ) : (
+              <>
+                <FaSave /> Guardar Cambios
+              </>
+            )}
           </Button>
-         
         </Modal.Footer>
       </Modal>
     </>

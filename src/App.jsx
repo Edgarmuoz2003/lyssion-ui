@@ -9,7 +9,6 @@ import SpinnerComponent from "./layouts/spinnerComponent";
 // 🪣 Zustand stores
 import { useUsuariosStore } from "./utils/hooks/useUsuariosStore";
 import { useLogindata } from "./utils/hooks/useLoginData";
-import { useOrdenesStore } from "./utils/hooks/useOrdenesStore";
 
 // 📦 Componentes cargados siempre (layout)
 import Header from "./layouts/header";
@@ -40,7 +39,6 @@ function App() {
   // Inicializa los estados globales (Zustand)
   useUsuariosStore();
   useLogindata();
-  useOrdenesStore();
   
 
   return (

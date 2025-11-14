@@ -71,6 +71,26 @@ export const GET_PRODUCTOS = gql`
   }
 `;
 
+export const GET_PRODUCTOS_VARIACIONES = gql`
+  query GetProductosVariaciones {
+    productos {
+      id
+      nombre
+      variaciones {
+        id
+        infoTalla {
+          id
+          nombre
+        }
+        infoColor {
+          id
+          nombre
+        }
+      }
+    }
+  }
+`;
+
 // ACTUALIZADO: Query para últimos productos, igual que GET_PRODUCTOS
 export const GET_ULTIMOS_PRODUCTOS = gql`
   query GetUltimosProductos {
@@ -167,6 +187,12 @@ export const GET_ORDENES = gql`
         id
         nombre
         apellido
+        documento
+        email
+        telefono
+        direccion
+        ciudad
+        departamento
       }
       # 'productos' ahora es 'items', que son las variaciones del producto
       items {

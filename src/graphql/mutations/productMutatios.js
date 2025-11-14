@@ -112,6 +112,22 @@ export const CREATE_CLIENTE = gql`
   }
 `;
 
+export const UPDATE_CLIENTE = gql`
+  mutation updateCliente($id: ID!, $input: ClienteInput!) {
+    updateCliente(id: $id, input: $input) {
+      id
+      nombre
+      apellido
+      documento
+      email
+      direccion
+      telefono
+      departamento
+      ciudad
+    }
+  }
+`;
+
 // ACTUALIZADO: Mutación para crear órdenes (pedidos) con la nueva estructura de items.
 export const CREATE_PEDIDO = gql`
   mutation createOrden($input: OrdenInput!) {
@@ -125,9 +141,21 @@ export const CREATE_PEDIDO = gql`
         id
         nombre
         apellido
+        documento
+        email
+        telefono
+        direccion
+        ciudad
+        departamento
       }
       items {
         id # ID de la ProductoVariacion
+        infoTalla {
+          nombre
+        }
+        infoColor {
+          nombre
+        }
         ProductoOrden {
           cantidad
           precioUnitario

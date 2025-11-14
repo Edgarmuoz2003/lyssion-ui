@@ -1,17 +1,13 @@
-import { Container, Button, Form, Spinner } from "react-bootstrap";
-import { useMainStore } from "../store/useMainStore";
-import { useState, useEffect } from "react";
+import { Container, Button, Spinner } from "react-bootstrap";
+import { useMemo, useState } from "react";
 import PedidoView from "./pedidoView";
-import { useMutation, useQuery } from "@apollo/client";
-import { GET_ORDENES } from "../graphql/queries/productQueries";
-import { DELETE_ORDEN } from "../graphql/mutations/productMutatios";
 import Select from "react-select";
 import { ESTADO_OPTIONS } from "../utils/enums";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { FaTrash, FaArrowLeft } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useOrdenesStore } from "../utils/hooks/useOrdenesStore";
 
-// Opciones para el filtro, incluyendo "Todos"
 const filtroOptions = [
   { value: "todos", label: "Todos los estados" },
   { value: ESTADO_OPTIONS.Pendiente, label: "Pendiente" },
@@ -20,41 +16,50 @@ const filtroOptions = [
 ];
 
 const PedidosList = () => {
-  const ordenes = useMainStore((state) => state.ordenes);
-  const setOrdenes = useMainStore((state) => state.setOrdenes);
-  const delOrden = useMainStore((state) => state.delOrden);
   const [show, setShow] = useState(false);
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
-  const [filtroEstado, setFiltroEstado] = useState(filtroOptions[0]); // Inicia con "Todos"
+  const [filtroEstado, setFiltroEstado] = useState(filtroOptions[0]);
 
-  const { loading, error } = useQuery(GET_ORDENES, {
-    variables: {
-      where: filtroEstado.value === "todos" ? {} : { estado: filtroEstado.value },
-    },
-    onCompleted: (data) => setOrdenes(data.ordenes),
-    fetchPolicy: "network-only", // Asegura que siempre se obtengan los datos más recientes
-  });
+  const filtroWhere = useMemo(() => {
+    return filtroEstado.value === "todos"
+      ? {}
+      : { estado: filtroEstado.value };
+  }, [filtroEstado]);
 
-  const [deleteOrdenMutation, { loading: deleting }] = useMutation(DELETE_ORDEN, {
-    onCompleted: () => {
-      mostrarExito("Orden eliminada correctamente.");
-    },
-    onError: (error) => {
-      mostrarError("Error al eliminar la orden", error.message);
-    },
-  });
+  const {
+    ordenes,
+    loadingOrdenes,
+    errorOrdenes,
+    deleteOrden: deleteOrdenMutation,
+    eliminandoOrden,
+    refetchOrdenes,
+  } = useOrdenesStore({ where: filtroWhere });
+
+  const ordenesOrdenadas = useMemo(() => {
+    return [...ordenes].sort((a, b) => Number(b.fecha) - Number(a.fecha));
+  }, [ordenes]);
 
   const handleDelete = async (id) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar esta orden? Esta acción no se puede deshacer.")) {
+    const confirmed = window.confirm(
+      "¿Estás seguro de que deseas eliminar esta orden? Esta acción no se puede deshacer."
+    );
+    if (!confirmed) return;
+
+    try {
       await deleteOrdenMutation({ variables: { id } });
-      // Actualizamos el estado de Zustand localmente para una respuesta visual inmediata.
-      delOrden(id);
+      mostrarExito("Orden eliminada correctamente.");
+      refetchOrdenes();
+    } catch (error) {
+      mostrarError(
+        "Error al eliminar la orden",
+        error?.message ?? "Error desconocido"
+      );
     }
   };
 
   const handleShow = (orden) => {
     setOrdenSeleccionada(orden);
-    setShow(!show);
+    setShow(true);
   };
 
   const handleFiltroChange = (selectedOption) => {
@@ -64,11 +69,10 @@ const PedidosList = () => {
   const formatFecha = (ms) => {
     if (!ms) return "";
 
-    const timestamp = Number(String(ms).trim()); // 🔹 fuerza a número limpio
-    if (isNaN(timestamp)) return ms; // si no se pudo convertir, muestro tal cual
+    const timestamp = Number(String(ms).trim());
+    if (Number.isNaN(timestamp)) return ms;
 
     const date = new Date(timestamp);
-
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
@@ -77,22 +81,20 @@ const PedidosList = () => {
   };
 
   const formatNombre = (cliente) => {
-    // ✅ Añadimos una guarda para evitar el error si el cliente es nulo o indefinido.
     if (!cliente) return "Cliente no disponible";
-
     return `${cliente.nombre} ${cliente.apellido ?? ""}`.trim();
   };
 
   const renderEstado = (estado) => {
     let color;
     switch (estado) {
-      case "pendiente":
+      case ESTADO_OPTIONS.Pendiente:
         color = "red";
         break;
-      case "En proceso":
+      case ESTADO_OPTIONS.Proceso:
         color = "blue";
         break;
-      case "Despachado":
+      case ESTADO_OPTIONS.Despachado:
         color = "green";
         break;
       default:
@@ -100,6 +102,7 @@ const PedidosList = () => {
     }
     return <span style={{ color, fontWeight: "bold" }}>{estado}</span>;
   };
+
   return (
     <>
       <Container>
@@ -120,14 +123,18 @@ const PedidosList = () => {
           </div>
         </div>
 
-        {loading && (
+        {loadingOrdenes && (
           <div className="text-center">
             <Spinner animation="border" /> <p>Cargando órdenes...</p>
           </div>
         )}
-        {error && <p className="text-danger">Error al cargar las órdenes: {error.message}</p>}
+        {errorOrdenes && (
+          <p className="text-danger">
+            Error al cargar las órdenes: {errorOrdenes.message}
+          </p>
+        )}
 
-        {!loading && !error && (
+        {!loadingOrdenes && !errorOrdenes && (
           <table className="table table-striped">
             <thead>
               <tr>
@@ -139,17 +146,14 @@ const PedidosList = () => {
               </tr>
             </thead>
             <tbody>
-              {ordenes
-                .slice() // Creamos una copia para no mutar el estado original
-                .sort((a, b) => Number(b.fecha) - Number(a.fecha)) // Ordenamos por fecha descendente
-                .map((orden) => (
+              {ordenesOrdenadas.map((orden) => (
                 <tr key={orden.id} className="pedidos-list-class">
                   <td>
                     <Button
                       variant="danger"
                       size="sm"
                       onClick={() => handleDelete(orden.id)}
-                      disabled={deleting}
+                      disabled={eliminandoOrden}
                     >
                       <FaTrash />
                     </Button>
@@ -169,7 +173,12 @@ const PedidosList = () => {
           </table>
         )}
       </Container>
-      <PedidoView show={show} setShow={setShow} orden={ordenSeleccionada} />
+      <PedidoView
+        show={show}
+        setShow={setShow}
+        orden={ordenSeleccionada}
+        onOrdenUpdated={refetchOrdenes}
+      />
     </>
   );
 };
