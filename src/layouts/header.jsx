@@ -25,7 +25,7 @@ const handleLogin = () => {
           <Navbar.Brand href="/">
             <img
               alt="Logo"
-              src="logo.png"
+              src="/logo.png"
               width="160"
               height="50"
               className="d-inline-block align-top"
