@@ -5,7 +5,7 @@ import { IoMdAdd } from "react-icons/io";
 import { FaSearch, FaEye, FaEyeSlash, FaSave, FaTrash, FaArrowLeft } from "react-icons/fa";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { useMainStore } from "../store/useMainStore";
-import { useUsuariosStore } from "../utils/useUsuariosStore";
+import { useUsuariosStore } from "../utils/hooks/useUsuariosStore";
 import { CREATE_USUARIO, DELETE_USUARIO } from "../graphql/mutations/productMutatios";
 import { Link } from "react-router-dom";
 

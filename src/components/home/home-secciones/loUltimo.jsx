@@ -5,6 +5,7 @@ import Marquee from "react-fast-marquee";
 import ProductCard from "../../../layouts/poducto";
 import SpinnerComponet from "@/layouts/spinnerComponent";
 import AlertComponent from "@/layouts/alertComponent";
+import { Button } from "react-bootstrap";
 
 
 const Loultimo = () => {
