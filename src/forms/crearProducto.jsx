@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { useState } from "react";
 import { Button, Modal, Form, Image } from "react-bootstrap";
 import Select from "react-select";
@@ -6,16 +6,11 @@ import {
   GET_COLORS,
   GET_TALLAS,
   GET_CATEGORIAS,
-  GET_PRODUCTOS,
 } from "../graphql/queries/productQueries";
 import { IoMdAdd } from "react-icons/io";
-import { CREATE_PRODUCTS } from "../graphql/mutations/productMutatios";
-import { useMainStore } from "../store/useMainStore";
 import { mostrarError, mostrarExito } from "../utils/hookMensajes";
 import { useProductosStore } from "@/utils/hooks/useProductosStore";
 import SpinnerComponet from "@/layouts/spinnerComponent";
-
-const INITIAL_VARIATION_DRAFT = { talla: null, precio: "", stock: "" };
 
 const ModalCrear = ({ handleClose, show }) => {
   const [nombre, setNombre] = useState("");
@@ -23,14 +18,7 @@ const ModalCrear = ({ handleClose, show }) => {
   const [selectedCategoria, setSelectedCategoria] = useState(null);
   const [selectedColorOption, setSelectedColorOption] = useState(null);
   const [colorEntries, setColorEntries] = useState([]);
-  const [variationDrafts, setVariationDrafts] = useState({});
-
-  const formateador = new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
+  const [precio, setPrecio] = useState("");
 
   const resetForm = () => {
     setColorEntries((prev) => {
@@ -39,11 +27,11 @@ const ModalCrear = ({ handleClose, show }) => {
       });
       return [];
     });
-    setVariationDrafts({});
     setSelectedColorOption(null);
     setNombre("");
     setDescripcion("");
     setSelectedCategoria(null);
+    setPrecio("");
   };
 
   const handleModalClose = () => {
@@ -155,13 +143,8 @@ const ModalCrear = ({ handleClose, show }) => {
         colorId: selectedColorOption.value,
         colorOption: selectedColorOption,
         images: [],
-        variations: [],
       },
     ]);
-    setVariationDrafts((prev) => ({
-      ...prev,
-      [selectedColorOption.value]: { ...INITIAL_VARIATION_DRAFT },
-    }));
     setSelectedColorOption(null);
   };
 
@@ -175,10 +158,6 @@ const ModalCrear = ({ handleClose, show }) => {
         return [...acc, entry];
       }, [])
     );
-    setVariationDrafts((prev) => {
-      const { [colorId]: _omit, ...rest } = prev;
-      return rest;
-    });
   };
 
   const handleAddImages = (colorId, files) => {
@@ -264,84 +243,6 @@ const ModalCrear = ({ handleClose, show }) => {
     );
   };
 
-  const handleDraftVariationChange = (colorId, field, value) => {
-    setVariationDrafts((prev) => ({
-      ...prev,
-      [colorId]: {
-        ...prev[colorId],
-        [field]: value,
-      },
-    }));
-  };
-
-  const handleAddVariation = (colorId) => {
-    const draft = variationDrafts[colorId] || INITIAL_VARIATION_DRAFT;
-    const { talla, precio, stock } = draft;
-
-    if (!talla) {
-      return mostrarError("Debe seleccionar una talla para la variación.");
-    }
-
-    const precioValue = Number(precio);
-    const stockValue = Number(stock);
-
-    if (!Number.isInteger(precioValue) || precioValue <= 0) {
-      return mostrarError("El precio de la variación debe ser un número entero mayor que cero.");
-    }
-
-    if (!Number.isInteger(stockValue) || stockValue < 0) {
-      return mostrarError("El stock debe ser un número entero mayor o igual a cero.");
-    }
-
-    setColorEntries((prev) =>
-      prev.map((entry) => {
-        if (entry.colorId !== colorId) {
-          return entry;
-        }
-
-        if (entry.variations.some((variation) => variation.tallaId === talla.value)) {
-          mostrarError("Esa talla ya existe para el color seleccionado.");
-          return entry;
-        }
-
-        return {
-          ...entry,
-          variations: [
-            ...entry.variations,
-            {
-              id: `${colorId}-${talla.value}`,
-              tallaId: talla.value,
-              tallaNombre: talla.label,
-              precio: precioValue,
-              stock: stockValue,
-            },
-          ],
-        };
-      })
-    );
-
-    setVariationDrafts((prev) => ({
-      ...prev,
-      [colorId]: { ...INITIAL_VARIATION_DRAFT },
-    }));
-  };
-
-  const handleRemoveVariation = (colorId, variationId) => {
-    setColorEntries((prev) =>
-      prev.map((entry) => {
-        if (entry.colorId !== colorId) {
-          return entry;
-        }
-        return {
-          ...entry,
-          variations: entry.variations.filter(
-            (variation) => variation.id !== variationId
-          ),
-        };
-      })
-    );
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -355,11 +256,6 @@ const ModalCrear = ({ handleClose, show }) => {
           `El color ${entry.colorOption.label} necesita al menos una imagen.`
         );
       }
-      if (entry.variations.length === 0) {
-        return mostrarError(
-          `El color ${entry.colorOption.label} necesita al menos una variación.`
-        );
-      }
     }
 
     if (!nombre.trim()) {
@@ -369,10 +265,28 @@ const ModalCrear = ({ handleClose, show }) => {
     if (!descripcion.trim()) {
       return mostrarError("La descripción del producto es obligatoria.");
     }
-
     if (!selectedCategoria) {
       return mostrarError("Debe seleccionar una categoría.");
     }
+
+    if (tallasLoading) {
+      return mostrarError("Las tallas se están cargando, espera un momento.");
+    }
+
+    if (tallasError || tallasOptions.length === 0) {
+      return mostrarError("No hay tallas disponibles para generar variaciones.");
+    }
+
+    const precioValue = Number(precio);
+    if (!Number.isInteger(precioValue) || precioValue <= 0) {
+      return mostrarError("El precio debe ser un número entero mayor que cero.");
+    }
+
+    const variacionesBase = tallasOptions.map((talla) => ({
+      tallaId: talla.value,
+      precio: precioValue,
+      stock: 10,
+    }));
 
     const colores = colorEntries.map((entry) => {
       const normalizedImages = entry.images.map((image) => ({ ...image }));
@@ -390,11 +304,7 @@ const ModalCrear = ({ handleClose, show }) => {
           archivo: image.file,
           isPrincipal: image.isPrincipal,
         })),
-        variaciones: entry.variations.map((variation) => ({
-          tallaId: variation.tallaId,
-          precio: variation.precio,
-          stock: variation.stock,
-        })),
+        variaciones: variacionesBase,
       };
     });
 
@@ -404,17 +314,16 @@ const ModalCrear = ({ handleClose, show }) => {
       categoriaId: selectedCategoria ? selectedCategoria.value : null,
       colores,
     };
-
     try {
       await createProducto({
-      variables: { input },
-    });
-    mostrarExito('Producto creado con éxito')
-    handleModalClose()
+        variables: { input },
+      });
+      mostrarExito("Producto creado con éxito");
+      handleModalClose();
     } catch (error) {
-      console.error('Error al crear el producto:', error);
-      mostrarError('Error al crear el producto', error.message);
-      handleModalClose()
+      console.error("Error al crear el producto:", error);
+      mostrarError("Error al crear el producto", error.message);
+      handleModalClose();
     }
    
   };
@@ -461,9 +370,7 @@ const ModalCrear = ({ handleClose, show }) => {
               )}
             </Form.Group>
 
-            {colorEntries.map((entry) => {
-              const draft = variationDrafts[entry.colorId] || INITIAL_VARIATION_DRAFT;
-
+                        {colorEntries.map((entry) => {
               return (
                 <div
                   key={entry.colorId}
@@ -553,118 +460,22 @@ const ModalCrear = ({ handleClose, show }) => {
                       </div>
                     )}
                   </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    <Form.Label>Variaciones (SKU)</Form.Label>
-                    <div
-                      style={{
-                        display: "grid",
-                        gap: "12px",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-                        alignItems: "end",
-                      }}
-                    >
-                      <Select
-                        options={tallasOptions}
-                        value={draft.talla}
-                        onChange={(option) =>
-                          handleDraftVariationChange(entry.colorId, "talla", option)
-                        }
-                        isLoading={tallasLoading}
-                        placeholder={
-                          tallasLoading
-                            ? "Cargando tallas..."
-                            : "Seleccione una talla"
-                        }
-                        isDisabled={tallasLoading || !!tallasError}
-                      />
-                      <Form.Control
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder="Precio"
-                        value={draft.precio}
-                        onChange={(event) =>
-                          handleDraftVariationChange(
-                            entry.colorId,
-                            "precio",
-                            event.target.value
-                          )
-                        }
-                      />
-                      <Form.Control
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder="Stock"
-                        value={draft.stock}
-                        onChange={(event) =>
-                          handleDraftVariationChange(
-                            entry.colorId,
-                            "stock",
-                            event.target.value
-                          )
-                        }
-                      />
-                      <Button
-                        variant="secondary"
-                        onClick={() => handleAddVariation(entry.colorId)}
-                      >
-                        Agregar variación
-                      </Button>
-                    </div>
-                    {tallasError && (
-                      <div style={{ color: "red", marginTop: 5 }}>
-                        Error al cargar las tallas
-                      </div>
-                    )}
-                  </Form.Group>
-
-                  {entry.variations.length > 0 && (
-                    <div>
-                      <strong>Variaciones agregadas</strong>
-                      <div style={{ marginTop: "8px", display: "grid", gap: "8px" }}>
-                        {entry.variations.map((variation) => (
-                          <div
-                            key={variation.id}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              padding: "8px 12px",
-                              border: "1px solid #f0f0f0",
-                              borderRadius: "6px",
-                            }}
-                          >
-                            <div>
-                              <div>
-                                <strong>Talla:</strong> {variation.tallaNombre}
-                              </div>
-                              <div>
-                                <strong>Precio:</strong>{" "}
-                                {formateador.format(variation.precio)}
-                              </div>
-                              <div>
-                                <strong>Stock:</strong> {variation.stock}
-                              </div>
-                            </div>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() =>
-                                handleRemoveVariation(entry.colorId, variation.id)
-                              }
-                            >
-                              Quitar
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })}
+
+            <Form.Group className="mb-3" controlId="productPrice">
+              <Form.Label>Precio</Form.Label>
+              <Form.Control
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Ingrese el precio para todas las tallas"
+                value={precio}
+                onChange={(event) => setPrecio(event.target.value)}
+              />
+            </Form.Group>
+
 
             <Form.Group className="mb-3" controlId="productName">
               <Form.Label>Nombre del producto</Form.Label>
@@ -728,4 +539,3 @@ const ModalCrear = ({ handleClose, show }) => {
 };
 
 export default ModalCrear;
-
