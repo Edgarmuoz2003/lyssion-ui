@@ -8,19 +8,19 @@ const Header = () => {
   const { isAuthenticated, user } = useLogindata();
   const navigate = useNavigate();
 
- const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  useMainStore.getState().setLoginData({ user: null, token: null });
-  navigate("/");
-};
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    useMainStore.getState().setLoginData({ user: null, token: null });
+    navigate("/");
+  };
 
-const handleLogin = () => {
-  navigate("/login")
-}
+  const handleLogin = () => {
+    navigate("/login");
+  };
   return (
     <>
-      <Navbar bg="dark" data-bs-theme="dark">
+      <Navbar bg="dark" data-bs-theme="dark" expand="lg">
         <Container>
           <Navbar.Brand href="/">
             <img
@@ -31,26 +31,33 @@ const handleLogin = () => {
               className="d-inline-block align-top"
             />{" "}
           </Navbar.Brand>
-          <Nav className="me-auto">
-            <Nav.Link href="/">Home</Nav.Link>
-            <Nav.Link href="/Pijamas">Pijamas</Nav.Link>
-            <Nav.Link href="/Casual">Casual</Nav.Link>
-            <Nav.Link href="/Deportiva">Deportiva</Nav.Link>
-            <Nav.Link href="/Nosotros">Nosotros</Nav.Link>
-            {isAuthenticated && (
-              <Nav.Link href="/Configuraciones">Configuraciones</Nav.Link>
+          <Navbar.Toggle aria-controls="main-nav" />
+          <Navbar.Collapse id="main-nav">
+            <Nav className="me-auto">
+              <Nav.Link href="/">Home</Nav.Link>
+              <Nav.Link href="/Pijamas">Pijamas</Nav.Link>
+              <Nav.Link href="/Casual">Casual</Nav.Link>
+              <Nav.Link href="/Deportiva">Deportiva</Nav.Link>
+              <Nav.Link href="/Nosotros">Nosotros</Nav.Link>
+              {isAuthenticated && (
+                <Nav.Link href="/Configuraciones">Configuraciones</Nav.Link>
+              )}
+            </Nav>
+            {isAuthenticated ? (
+              <div className="d-flex align-items-center gap-2 nav-login">
+                <p className="mb-0 text-white">{user?.nombre}</p>
+                <Button className="login-button-nav" onClick={handleLogout}>
+                  <FiLogOut size={24} className="me-3" /> Logout
+                </Button>
+              </div>
+            ) : (
+              <div className="nav-login">
+                <Button className="login-button-nav" onClick={handleLogin}>
+                  <FiLogIn size={24} className="me-3" /> Login
+                </Button>
+              </div>
             )}
-          </Nav>
-          {isAuthenticated ? (
-            <div className="d-flex align-items-center gap-2 nav-login">
-              <p className="mb-0 text-white">{user?.nombre}</p>
-              <Button className="login-button-nav" onClick={handleLogout}><FiLogOut size={24} className="me-3" /> Logout</Button>
-            </div>
-          ) : (
-            <div className="nav-login">
-              <Button className="login-button-nav" onClick={handleLogin}><FiLogIn size={24} className="me-3" /> Login</Button>
-            </div>
-          )}
+          </Navbar.Collapse>
         </Container>
       </Navbar>
     </>

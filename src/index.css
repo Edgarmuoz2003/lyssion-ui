@@ -557,3 +557,23 @@ body {
 .btn-crearProducto{
   width: 180px !important ;
 }
+
+.kart-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 9999;
+  cursor: pointer;
+}
+
+@media (max-width: 991.98px) {
+  .kart-button {
+    top: 70px;
+  }
+}

@@ -25,19 +25,7 @@ const KartButton = () => {
   return (
     <button
       onClick={() => navigate("/carrito")}
-      style={{
-        position: "fixed",
-        top: "20px",
-        right: "20px",
-        backgroundColor: "#000",
-        color: "#fff",
-        border: "none",
-        borderRadius: "50%",
-        padding: "16px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-        zIndex: 9999,
-        cursor: "pointer",
-      }}
+      className="kart-button"
     >
       <FaShoppingCart size={20} />
       {productCount > 0 && (
