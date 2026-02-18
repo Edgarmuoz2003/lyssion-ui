@@ -7,6 +7,7 @@ import {
 import {
   CREATE_PRODUCTS,
   DELETE_PRODUCTS,
+  UPDATE_PRODUCTS,
 } from "../../graphql/mutations/productMutatios";
 
 export function useProductosStore() {
@@ -33,14 +34,27 @@ export function useProductosStore() {
     ],
   });
 
+  const [updateProducto, { loading: actualizandoProducto }] = useMutation(
+    UPDATE_PRODUCTS,
+    {
+      awaitRefetchQueries: true,
+      refetchQueries: [
+        { query: GET_PRODUCTOS, variables: { where: productoWhere ?? {} } },
+        { query: GET_ULTIMOS_PRODUCTOS },
+      ],
+    },
+  );
+
   return {
     productos: data?.productos || [],
     creando: creandoProducto,
+    actualizando: actualizandoProducto,
     loading,
     error,
     productoWhere,
     setProductoWhere,
     createProducto,
+    updateProducto,
     deleteProducto,
     refetch,
   };

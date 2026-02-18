@@ -459,7 +459,7 @@ body {
 
 .banner-nosotros {
   position: relative;
-  background: url('/src/assets/Nosotros.png') center/cover no-repeat;
+  background: url('./assets/Nosotros.png') center/cover no-repeat;
   height: 60vh;
   display: flex;
   align-items: center;

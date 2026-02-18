@@ -23,6 +23,46 @@ export const DELETE_PRODUCTS = gql`
   }
 `;
 
+export const UPDATE_PRODUCTS = gql`
+  mutation UpdateProducts($id: ID!, $input: UpdateProductoInput!) {
+    updateProducto(id: $id, input: $input) {
+      id
+      nombre
+      descripcion
+      categoria {
+        id
+        nombre
+      }
+      coloresDisponibles {
+        id
+        color {
+          id
+          nombre
+          codigo_hex
+        }
+        imagenes {
+          id
+          url
+          isPrincipal
+        }
+      }
+      variaciones {
+        id
+        precio
+        stock
+        infoTalla {
+          id
+          nombre
+        }
+        infoColor {
+          id
+          nombre
+        }
+      }
+    }
+  }
+`;
+
 export const CREATE_COLORS = gql`
   mutation CreateColors($nombre: String!, $codigo_hex: String) {
     createColor(nombre: $nombre, codigo_hex: $codigo_hex) {
