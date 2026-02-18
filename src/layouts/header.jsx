@@ -1,7 +1,7 @@
 import { Button, Container, Nav, Navbar } from "react-bootstrap";
 import { useLogindata } from "../utils/hooks/useLoginData";
 import { useMainStore } from "../store/useMainStore";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
 
 
@@ -21,32 +21,44 @@ const Header = () => {
   };
   return (
     <>
-      <Navbar bg="dark" data-bs-theme="dark" expand="lg">
+      <Navbar className="main-navbar" expand="lg" sticky="top">
         <Container>
-          <Navbar.Brand href="/">
+          <Navbar.Brand as={NavLink} to="/" className="main-brand">
             <img
               alt="Logo"
               src="/logo.png"
               width="160"
               height="50"
               className="d-inline-block align-top"
-            />{" "}
+            />
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="main-nav" />
           <Navbar.Collapse id="main-nav">
-            <Nav className="me-auto">
-              <Nav.Link href="/">Home</Nav.Link>
-              <Nav.Link href="/Pijamas">Pijamas</Nav.Link>
-              <Nav.Link href="/Casual">Casual</Nav.Link>
-              <Nav.Link href="/Deportiva">Deportiva</Nav.Link>
-              <Nav.Link href="/Nosotros">Nosotros</Nav.Link>
+            <Nav className="me-auto main-nav-links">
+              <Nav.Link as={NavLink} to="/" end>
+                Home
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/Pijamas">
+                Pijamas
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/Casual">
+                Casual
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/Deportiva">
+                Deportiva
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/Nosotros">
+                Nosotros
+              </Nav.Link>
               {isAuthenticated && (
-                <Nav.Link href="/Configuraciones">Configuraciones</Nav.Link>
+                <Nav.Link as={NavLink} to="/Configuraciones">
+                  Configuraciones
+                </Nav.Link>
               )}
             </Nav>
             {isAuthenticated ? (
               <div className="d-flex align-items-center gap-2 nav-login">
-                <p className="mb-0 text-white">{user?.nombre}</p>
+                <p className="mb-0 nav-user-name">{user?.nombre}</p>
                 <Button className="login-button-nav" onClick={handleLogout}>
                   <FiLogOut size={24} className="me-3" /> Logout
                 </Button>

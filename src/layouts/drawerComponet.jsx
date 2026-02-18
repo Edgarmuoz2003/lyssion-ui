@@ -4,40 +4,44 @@ import { HiColorSwatch } from "react-icons/hi";
 import { TbRulerMeasure } from "react-icons/tb";
 import { MdCategory } from "react-icons/md";
 import { FaUsers, FaClipboardList } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const DrawerContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 `;
 
 const DrawerLinkButton = styled(Button)`
   && {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
+    justify-content: flex-start;
+    gap: 10px;
     width: 100%;
-    padding: 12px 16px;
-    color: #1f1f1f;
-    font-weight: 500;
-    border: 1px solid #1f1f1f;
+    padding: 12px 14px;
+    color: #10243e;
+    font-weight: 600;
+    border: 1px solid #d8e0e8;
+    border-radius: 12px;
     box-shadow: none;
-    background: transparent;
+    background: #fff;
     text-decoration: none;
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
     cursor: pointer;
-    text-align: center;
+    text-align: left;
   }
 
   && svg {
     font-size: 20px;
+    color: #193f66;
   }
 
   &&:hover,
   &&:focus-visible {
-    color: #1f1f1f;
-    background-color: rgba(0, 0, 0, 0.08);
+    color: #10243e;
+    border-color: #193f66;
+    background-color: #f4f7fb;
   }
 
   &&:hover svg,
@@ -46,26 +50,41 @@ const DrawerLinkButton = styled(Button)`
   }
 `;
 
-const DrawerComponent = ({ open, onClose }) => (
-  <Drawer title="Configuraciones" open={open} onClose={onClose}>
-    <DrawerContent>
-      <DrawerLinkButton size="large" type="text" href="/Colores" icon={<HiColorSwatch />}>
-        Colores
-      </DrawerLinkButton>
-      <DrawerLinkButton size="large" type="text" href="/Tallas" icon={<TbRulerMeasure />}>
-        Tallas
-      </DrawerLinkButton>
-      <DrawerLinkButton size="large" type="text" href="/Categorias" icon={<MdCategory />}>
-        Categorias
-      </DrawerLinkButton>
-      <DrawerLinkButton size="large" type="text" href="/Usuarios" icon={<FaUsers />}>
-        Usuarios
-      </DrawerLinkButton>
-      <DrawerLinkButton size="large" type="text" href="/PedidosList" icon={<FaClipboardList />}>
-        Ordenes de pedido
-      </DrawerLinkButton>
-    </DrawerContent>
-  </Drawer>
-);
+const DrawerComponent = ({ open, onClose }) => {
+  const navigate = useNavigate();
+
+  const handleNavigate = (path) => {
+    navigate(path);
+    onClose();
+  };
+
+  return (
+    <Drawer
+      title="Configuraciones"
+      className="config-drawer"
+      open={open}
+      onClose={onClose}
+      width={320}
+    >
+      <DrawerContent>
+        <DrawerLinkButton size="large" type="text" icon={<HiColorSwatch />} onClick={() => handleNavigate("/Colores")}>
+          Colores
+        </DrawerLinkButton>
+        <DrawerLinkButton size="large" type="text" icon={<TbRulerMeasure />} onClick={() => handleNavigate("/Tallas")}>
+          Tallas
+        </DrawerLinkButton>
+        <DrawerLinkButton size="large" type="text" icon={<MdCategory />} onClick={() => handleNavigate("/Categorias")}>
+          Categorías
+        </DrawerLinkButton>
+        <DrawerLinkButton size="large" type="text" icon={<FaUsers />} onClick={() => handleNavigate("/Usuarios")}>
+          Usuarios
+        </DrawerLinkButton>
+        <DrawerLinkButton size="large" type="text" icon={<FaClipboardList />} onClick={() => handleNavigate("/PedidosList")}>
+          Órdenes de pedido
+        </DrawerLinkButton>
+      </DrawerContent>
+    </Drawer>
+  );
+};
 
 export default DrawerComponent;
