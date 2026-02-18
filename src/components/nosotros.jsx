@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Container, Row, Col, Button, Modal, Image } from "react-bootstrap";
+import gerenteImg from "../assets/gerente.jpg";
+import subGerenteImg from "../assets/sub-gerente.jpg";
 
 const Nosotros = () => {
   const [showGerente, setShowGerente] = useState(false);
@@ -38,7 +40,7 @@ const Nosotros = () => {
         <Row className="justify-content-center text-center">
           <Col md={4}>
             <Image
-              src="/src/assets/gerente.jpg"
+              src={gerenteImg}
               roundedCircle
               className="ceo-img mb-3"
             />
@@ -50,7 +52,7 @@ const Nosotros = () => {
           </Col>
           <Col md={4}>
             <Image
-              src="/src/assets/sub-gerente.jpg"
+              src={subGerenteImg}
               roundedCircle
               className="ceo-img mb-3"
             />
