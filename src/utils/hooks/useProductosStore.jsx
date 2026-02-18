@@ -10,18 +10,41 @@ import {
   UPDATE_PRODUCTS,
 } from "../../graphql/mutations/productMutatios";
 
+const sanitizeWhereForApi = (where) => {
+  if (!where || typeof where !== "object") return {};
+
+  const safeWhere = { ...where };
+
+  if (safeWhere.nombre && typeof safeWhere.nombre === "object") {
+    const fallbackValue =
+      safeWhere.nombre.contains ??
+      safeWhere.nombre.containsi ??
+      safeWhere.nombre.eq;
+
+    if (typeof fallbackValue === "string") {
+      safeWhere.nombre = fallbackValue;
+    } else {
+      delete safeWhere.nombre;
+    }
+  }
+
+  return safeWhere;
+};
+
 export function useProductosStore() {
   const productoWhere = useMainStore((s) => s.productoWhere);
   const setProductoWhere = useMainStore((s) => s.setProductoWhere);
+  const safeWhere = sanitizeWhereForApi(productoWhere);
+
   const { data, loading, error, refetch } = useQuery(GET_PRODUCTOS, {
-    variables: { where: productoWhere ?? {} },
+    variables: { where: safeWhere },
     fetchPolicy: "cache-and-network",
   });
 
   const [createProducto, { loading: creandoProducto }] = useMutation(CREATE_PRODUCTS, {
     awaitRefetchQueries: true,
     refetchQueries: [
-      { query: GET_PRODUCTOS, variables: { where: productoWhere ?? {} } },
+      { query: GET_PRODUCTOS, variables: { where: safeWhere } },
       { query: GET_ULTIMOS_PRODUCTOS },
     ],
   });
@@ -29,7 +52,7 @@ export function useProductosStore() {
   const [deleteProducto] = useMutation(DELETE_PRODUCTS, {
     awaitRefetchQueries: true,
     refetchQueries: [
-      { query: GET_PRODUCTOS, variables: { where: productoWhere ?? {} } },
+      { query: GET_PRODUCTOS, variables: { where: safeWhere } },
       { query: GET_ULTIMOS_PRODUCTOS },
     ],
   });
@@ -39,7 +62,7 @@ export function useProductosStore() {
     {
       awaitRefetchQueries: true,
       refetchQueries: [
-        { query: GET_PRODUCTOS, variables: { where: productoWhere ?? {} } },
+        { query: GET_PRODUCTOS, variables: { where: safeWhere } },
         { query: GET_ULTIMOS_PRODUCTOS },
       ],
     },

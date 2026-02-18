@@ -37,21 +37,18 @@ const ProductCard = ({ producto }) => {
   return (
     <Link
       to={`/detalles/${producto.id}`}
-      style={{ textDecoration: "none", color: "inherit", width: "100%", display: "block" }}
+      className="product-card-link"
     >
-      <Card className="h-100" style={{ width: "100%" }}>
+      <Card className="h-100 product-card">
         {imageUrl ? (
           <Card.Img
             variant="top"
             src={imageUrl}
             alt={`imagen ${producto.nombre}`}
-            style={{ height: "250px", objectFit: "cover", width: "100%" }}
+            className="product-card-image"
           />
         ) : (
-          <div
-            className="d-flex justify-content-center align-items-center"
-            style={{ height: "250px", backgroundColor: "#f8f9fa" }}
-          >
+          <div className="d-flex justify-content-center align-items-center product-card-image product-card-image-empty">
             <span className="text-muted">Sin imagen</span>
           </div>
         )}

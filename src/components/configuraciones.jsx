@@ -1,4 +1,4 @@
-import { Container, Button, Dropdown, Row, Col } from "react-bootstrap";
+import { Container, Button, Row, Col } from "react-bootstrap";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import styled from "styled-components";
 import { IoMdAdd } from "react-icons/io";
@@ -29,12 +29,18 @@ const CogIconButton = styled.span.attrs({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #000;
+  color: #10243e;
   cursor: pointer;
-  transition: color 0.2s ease-in-out;
+  transition: color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  border: 1px solid #d8e0e8;
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  background: #fff;
 
   &:hover {
-    color: #0d6efd;
+    color: #193f66;
+    border-color: #193f66;
   }
 
   &:focus-visible {
@@ -82,11 +88,12 @@ const Configuraciones = () => {
   const handleShow = () => setShow(true);
 
   useEffect(() => {
-    const valueFromStore = getNombreFilterValue(productoWhere);
-    if (valueFromStore !== searchTerm) {
-      setSearchTerm(valueFromStore);
+    // En Configuraciones usamos filtro local para evitar enviar operadores
+    // no soportados por el backend (ej: nombre.contains).
+    if (productoWhere && Object.keys(productoWhere).length > 0) {
+      setProductoWhere({});
     }
-  }, [productoWhere, searchTerm]);
+  }, [productoWhere, setProductoWhere]);
 
   const productosFiltrados = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -100,8 +107,6 @@ const Configuraciones = () => {
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchTerm(value);
-    const trimmed = value.trim();
-    setProductoWhere(trimmed ? { nombre: { contains: trimmed } } : {});
   };
 
   if (loading) return <SpinnerComponet />;
@@ -118,13 +123,13 @@ const Configuraciones = () => {
 
   return (
     <>
-      <Container>
-        <div className="productos_header">
+      <Container className="config-toolbar-wrap">
+        <div className="productos_header config-toolbar">
           <CogIconButton onClick={handleToggleDrawer} onKeyDown={handleIconKeyDown}>
             <FaCog size={24} />
           </CogIconButton>
           
-          <div className="input-icon">
+          <div className="input-icon config-search">
             <FaSearch size={18} className="icono-buscar" />
             <input
               type="text"
@@ -133,16 +138,16 @@ const Configuraciones = () => {
               onChange={handleSearchChange}
             />
           </div>
-          <Button onClick={handleShow} className="btn-crearProducto">
+          <Button onClick={handleShow} className="btn-crearProducto config-create-btn">
             <IoMdAdd size={22} /> Crear producto
           </Button>
         </div>
         <ModalCrear handleClose={handleClose} show={show} />
       </Container>
 
-      <Container className="productos_container">
+      <Container className="productos_container catalog-section">
         {productosFiltrados.length > 0 ? (
-          <Row>
+          <Row className="g-4 pb-5">
             {productosFiltrados.map((producto) => (
               <Col
                 key={producto.id}
@@ -150,14 +155,17 @@ const Configuraciones = () => {
                 md={6}
                 lg={4}
                 xl={3}
-                className="mt-5"
+                className="d-flex align-items-stretch"
               >
                 <ProductCard producto={producto} />
               </Col>
             ))}
           </Row>
         ) : (
-          <p>No se encontraron productos.</p>
+          <div className="empty-catalog-state">
+            <h3>No se encontraron productos</h3>
+            <p>Prueba con otro término de búsqueda o crea uno nuevo.</p>
+          </div>
         )}
       </Container>
 
