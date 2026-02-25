@@ -20,6 +20,49 @@ import { formatPrice } from "../utils/helpers";
 import { DivContainer } from "@/utils/styledComponents";
 import { useNavigate } from "react-router-dom";
 
+const WOMPI_WIDGET_URL = "https://checkout.wompi.co/widget.js";
+const sanitizeDigits = (value) => String(value || "").replace(/\D/g, "");
+const normalizeFullName = (value) =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9 .'-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+const normalizePhonePrefix = (value) => {
+  const digits = sanitizeDigits(value);
+  return digits ? `+${digits}` : "+57";
+};
+
+const loadWompiWidgetScript = () =>
+  new Promise((resolve, reject) => {
+    if (window.WidgetCheckout) {
+      resolve();
+      return;
+    }
+
+    const existingScript = document.querySelector(
+      `script[src="${WOMPI_WIDGET_URL}"]`
+    );
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve(), { once: true });
+      existingScript.addEventListener(
+        "error",
+        () => reject(new Error("No fue posible cargar el script de Wompi")),
+        { once: true }
+      );
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = WOMPI_WIDGET_URL;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () =>
+      reject(new Error("No fue posible cargar el script de Wompi"));
+    document.body.appendChild(script);
+  });
+
 const Pedido = () => {
   const departamentos = data.map((item) => item.departamento);
   const [ciudades, setCiudades] = useState([]);
@@ -40,9 +83,15 @@ const Pedido = () => {
   const [activeTab, setActiveTab] = useState("datos");
   const [isEditingCliente, setIsEditingCliente] = useState(false);
   const [ordenCreada, setOrdenCreada] = useState(null);
+  const [checkoutError, setCheckoutError] = useState("");
   const navigate = useNavigate();
 
-  const { createOrden, creandoOrden } = useOrdenesStore({ skipQuery: true });
+  const {
+    createOrden,
+    creandoOrden,
+    createWompiCheckout,
+    creandoWompiCheckout,
+  } = useOrdenesStore({ skipQuery: true });
   const {
     kartProductos,
     total: totalProductos,
@@ -110,7 +159,81 @@ const Pedido = () => {
   const subtotal = totalProductos;
   const costoEnvio = hasProducts ? 15000 : 0;
   const totalAPagar = hasProducts ? subtotal + costoEnvio : 0;
-  const totalInterno = subtotal;
+  const totalInterno = totalAPagar;
+
+  const openWompiWidget = async (checkoutData, orderId) => {
+    await loadWompiWidgetScript();
+    if (!window.WidgetCheckout) {
+      throw new Error("Widget de Wompi no disponible");
+    }
+
+    const customerData = {
+      email: String(checkoutData?.customerData?.email || "").trim(),
+      fullName: normalizeFullName(checkoutData?.customerData?.fullName),
+      phoneNumber: sanitizeDigits(checkoutData?.customerData?.phoneNumber),
+      phoneNumberPrefix: normalizePhonePrefix(
+        checkoutData?.customerData?.phoneNumberPrefix
+      ),
+      legalId: sanitizeDigits(checkoutData?.customerData?.legalId),
+      legalIdType: String(checkoutData?.customerData?.legalIdType || "CC").trim(),
+    };
+
+    const redirectUrl = String(checkoutData?.redirectUrl || "").trim();
+    const shouldUseRedirectUrl =
+      /^https:\/\//i.test(redirectUrl) && !/localhost|127\.0\.0\.1/i.test(redirectUrl);
+
+    const checkoutConfig = {
+      currency: checkoutData.currency,
+      amountInCents: checkoutData.amountInCents,
+      reference: checkoutData.reference,
+      publicKey: checkoutData.publicKey,
+      expirationTime: checkoutData.expirationTime,
+      signature: { integrity: checkoutData.integritySignature },
+      customerData,
+    };
+
+    if (shouldUseRedirectUrl) {
+      checkoutConfig.redirectUrl = redirectUrl;
+    }
+
+    const checkout = new window.WidgetCheckout(checkoutConfig);
+
+    checkout.open((result) => {
+      const transactionId = result?.transaction?.id;
+      if (transactionId) {
+        navigate(`/detallesPedido/${orderId}?transactionId=${transactionId}`);
+        return;
+      }
+      navigate(`/detallesPedido/${orderId}`);
+    });
+  };
+
+  const handleStartWompiCheckout = async (ordenData) => {
+    const orderId = ordenData?.id;
+    if (!orderId) {
+      mostrarError("No se encontro la orden para iniciar el pago");
+      return;
+    }
+
+    try {
+      setCheckoutError("");
+      const amountInCents = Math.round(
+        Number(ordenData?.totalCliente || ordenData?.total || 0) * 100
+      );
+      const { data } = await createWompiCheckout({
+        variables: { ordenId: orderId, totalEnCentavos: amountInCents },
+      });
+      const checkoutData = data?.createWompiCheckout;
+      if (!checkoutData?.publicKey) {
+        throw new Error("Wompi no devolvio la configuracion del checkout");
+      }
+      await openWompiWidget(checkoutData, orderId);
+    } catch (error) {
+      console.error("Error iniciando checkout Wompi", error);
+      setCheckoutError(error?.message || "No se pudo iniciar el checkout");
+      mostrarError("No se pudo iniciar el pago en Wompi");
+    }
+  };
 
   const handleDepartamentoChange = (e) => {
     const selectedDepartamento = e.target.value;
@@ -232,6 +355,10 @@ const Pedido = () => {
         fecha: new Date().toISOString(),
         total: totalInterno,
         estado: "pendiente",
+        estadoPago:
+          metodoPago === "contra_entrega"
+            ? "contra_entrega_pendiente"
+            : "pago_pendiente",
         items: validItems.map((item) => ({
           productoVariacionId: Number(item.productoVariacionId),
           cantidad: item.cantidad,
@@ -239,17 +366,17 @@ const Pedido = () => {
         })),
       };
 
-      const totalOrden = totalInterno;
       const { data } = await createOrden({ variables: { input } });
       const nuevaOrden = data?.createOrden;
       clearKart();
-      setOrdenCreada({
+      const nuevaOrdenCreada = {
         id: nuevaOrden?.id ?? null,
         numeroOrden: nuevaOrden?.numeroOrden ?? null,
         metodoPago,
-        total: nuevaOrden?.total ?? totalOrden,
+        total: nuevaOrden?.total ?? totalInterno,
         totalCliente: totalAPagar,
-      });
+      };
+      setOrdenCreada(nuevaOrdenCreada);
       setSubmited(false);
       setActiveTab("pago");
       setIsEditingCliente(false);
@@ -257,6 +384,9 @@ const Pedido = () => {
       const metodo =
         metodoPago === "contra_entrega" ? "contra entrega" : "online";
       mostrarExito(`Pedido creado con exito (${metodo})`);
+      if (metodoPago === "online" && nuevaOrdenCreada?.id) {
+        await handleStartWompiCheckout(nuevaOrdenCreada);
+      }
     } catch (error) {
       console.error(error);
       mostrarError(
@@ -311,6 +441,7 @@ const Pedido = () => {
     setIsEditingCliente(false);
     setAceptaPoliticas(false);
     setOrdenCreada(null);
+    setCheckoutError("");
   };
 
   const handleVerDetallePedido = () => {
@@ -345,10 +476,23 @@ const Pedido = () => {
             entrega. Te contactaremos para coordinar el envio.
           </p>
         ) : (
-          <p>
-            Proximamente habilitaremos la pasarela de pago. Por ahora hemos
-            registrado tu pedido y te enviaremos instrucciones de pago.
-          </p>
+          <>
+            <p>
+              Tu orden fue registrada y esta pendiente de pago online. Continua
+              con Wompi para completar la compra.
+            </p>
+            {checkoutError ? (
+              <p className="text-danger mb-2">{checkoutError}</p>
+            ) : null}
+            <Button
+              variant="warning"
+              className="mb-2"
+              onClick={() => handleStartWompiCheckout(ordenCreada)}
+              disabled={creandoWompiCheckout}
+            >
+              {creandoWompiCheckout ? "Abriendo checkout..." : "Pagar con Wompi"}
+            </Button>
+          </>
         )}
         <div className="d-flex flex-column flex-md-row gap-2 mt-3">
           <Button

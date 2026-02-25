@@ -177,6 +177,7 @@ export const CREATE_PEDIDO = gql`
       fecha
       total
       estado
+      estadoPago
       cliente {
         id
         nombre
@@ -219,4 +220,44 @@ export const DELETE_ORDEN = gql`
     deleteOrden(id: $id)
   }
 `;
+
+export const CREATE_WOMPI_CHECKOUT = gql`
+  mutation CreateWompiCheckout($ordenId: ID!, $totalEnCentavos: Int) {
+    createWompiCheckout(ordenId: $ordenId, totalEnCentavos: $totalEnCentavos) {
+      publicKey
+      currency
+      amountInCents
+      reference
+      integritySignature
+      redirectUrl
+      expirationTime
+      widgetScriptUrl
+      customerData {
+        email
+        fullName
+        phoneNumber
+        phoneNumberPrefix
+        legalId
+        legalIdType
+      }
+    }
+  }
+`;
+
+export const SYNC_WOMPI_TRANSACTION = gql`
+  mutation SyncWompiTransaction($transactionId: String!) {
+    syncWompiTransaction(transactionId: $transactionId) {
+      ok
+      message
+      orderId
+      transactionId
+      reference
+      wompiStatus
+      internalEstadoPago
+      statusMessage
+    }
+  }
+`;
+
+
 

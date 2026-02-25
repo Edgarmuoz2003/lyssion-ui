@@ -3,7 +3,9 @@ import { useMutation, useQuery } from "@apollo/client";
 import { GET_ORDENES } from "../../graphql/queries/productQueries";
 import {
   CREATE_PEDIDO,
+  CREATE_WOMPI_CHECKOUT,
   DELETE_ORDEN,
+  SYNC_WOMPI_TRANSACTION,
   UPDATE_ORDEN_ESTADO,
 } from "../../graphql/mutations/productMutatios";
 
@@ -35,6 +37,12 @@ export function useOrdenesStore(options = {}) {
 
   const [updateOrdenEstado, updateOrdenEstadoState] = useMutation(
     UPDATE_ORDEN_ESTADO
+  );
+  const [createWompiCheckout, createWompiCheckoutState] = useMutation(
+    CREATE_WOMPI_CHECKOUT
+  );
+  const [syncWompiTransaction, syncWompiTransactionState] = useMutation(
+    SYNC_WOMPI_TRANSACTION
   );
 
   const [deleteOrden, deleteOrdenState] = useMutation(DELETE_ORDEN, {
@@ -68,6 +76,10 @@ export function useOrdenesStore(options = {}) {
     creandoOrden: createOrdenState.loading,
     updateOrdenEstado,
     actualizandoOrden: updateOrdenEstadoState.loading,
+    createWompiCheckout,
+    creandoWompiCheckout: createWompiCheckoutState.loading,
+    syncWompiTransaction,
+    sincronizandoWompi: syncWompiTransactionState.loading,
     deleteOrden,
     eliminandoOrden: deleteOrdenState.loading,
   };
