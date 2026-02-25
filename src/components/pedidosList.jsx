@@ -103,6 +103,39 @@ const PedidosList = () => {
     return <span style={{ color, fontWeight: "bold" }}>{estado}</span>;
   };
 
+  const getEstadoPagoLabel = (estadoPago) => {
+    const estado = String(estadoPago || "").toLowerCase();
+    const labels = {
+      pagado: "pagado",
+      pago_pendiente: "pago pendiente",
+      pago_rechazado: "pago rechazado",
+      pago_anulado: "pago anulado",
+      pago_error: "pago error",
+      contra_entrega_pendiente: "contraentrega",
+      no_aplica: "contraentrega",
+    };
+
+    return labels[estado] || estado || "sin estado";
+  };
+
+  const renderEstadoPago = (estadoPago) => {
+    const estado = String(estadoPago || "").toLowerCase();
+    let color = "black";
+
+    if (estado === "pagado") color = "green";
+    else if (estado === "pago_pendiente") color = "#b58100";
+    else if (estado === "pago_rechazado" || estado === "pago_error")
+      color = "red";
+    else if (estado === "no_aplica" || estado === "contra_entrega_pendiente")
+      color = "#0056b3";
+
+    return (
+      <span style={{ color, fontWeight: "bold" }}>
+        {getEstadoPagoLabel(estadoPago)}
+      </span>
+    );
+  };
+
   return (
     <>
       <Container>
@@ -143,6 +176,7 @@ const PedidosList = () => {
                 <th>Orden Numero</th>
                 <th>Cliente</th>
                 <th>Estado</th>
+                <th>Estado de pago</th>
               </tr>
             </thead>
             <tbody>
@@ -167,6 +201,7 @@ const PedidosList = () => {
                   </td>
                   <td>{formatNombre(orden.cliente)}</td>
                   <td>{renderEstado(orden.estado)}</td>
+                  <td>{renderEstadoPago(orden.estadoPago)}</td>
                 </tr>
               ))}
             </tbody>

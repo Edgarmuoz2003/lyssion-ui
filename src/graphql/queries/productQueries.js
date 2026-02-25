@@ -183,6 +183,7 @@ export const GET_ORDENES = gql`
       fecha
       total
       estado
+      estadoPago
       cliente {
         id
         nombre

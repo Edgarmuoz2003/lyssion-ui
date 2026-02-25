@@ -74,6 +74,21 @@ const PedidoView = ({ show, setShow, orden, onOrdenUpdated }) => {
     return normalizeOrdenProductos(orden, { variacionesMap });
   }, [orden, variacionesMap]);
 
+  const estadoPagoLabel = useMemo(() => {
+    const estado = String(orden?.estadoPago || "").toLowerCase();
+    const labels = {
+      pagado: "pagado",
+      pago_pendiente: "pago pendiente",
+      pago_rechazado: "pago rechazado",
+      pago_anulado: "pago anulado",
+      pago_error: "pago error",
+      contra_entrega_pendiente: "contraentrega",
+      no_aplica: "contraentrega",
+    };
+
+    return labels[estado] || estado || "sin estado";
+  }, [orden?.estadoPago]);
+
   return (
     <>
       <Modal
@@ -112,6 +127,9 @@ const PedidoView = ({ show, setShow, orden, onOrdenUpdated }) => {
               <h4>Datos del cliente</h4>
               <div className="d-flex">
                 <div className="flex-column w-50 ms-3">
+                  <p className="mb-1">
+                    <strong>Estado de pago:</strong> {estadoPagoLabel}
+                  </p>
                   <p className="mb-1">
                     <strong>Nombre:</strong> {orden.cliente.nombre}{" "}
                     {orden.cliente.apellido}
