@@ -28,6 +28,32 @@ export const GET_CATEGORIAS = gql`
   }
 `;
 
+export const GET_BANNERS = gql`
+  query GetBanners {
+    banners {
+      id
+      nombre
+      url
+      public_id
+      activo
+      posicion
+    }
+  }
+`;
+
+export const GET_BANNERS_ACTIVOS = gql`
+  query GetBannersActivos {
+    bannersActivos {
+      id
+      nombre
+      url
+      public_id
+      activo
+      posicion
+    }
+  }
+`;
+
 // ACTUALIZADO: Query para obtener productos con la nueva estructura de SKUs
 export const GET_PRODUCTOS = gql`
   query GetProducts($where: JSON) {

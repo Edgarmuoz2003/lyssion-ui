@@ -27,6 +27,7 @@ const Carrito = lazy(() => import("./components/carrito"));
 const Pedido = lazy(() => import("./components/pedido"));
 const Nosotros = lazy(() => import("./components/nosotros"));
 const Configuraciones = lazy(() => import("./components/configuraciones"));
+const Banners = lazy(() => import("./components/configuracion/banners"));
 const Colores = lazy(() => import("./components/colores"));
 const Tallas = lazy(() => import("./components/tallas"));
 const Categorias = lazy(() => import("./components/categorias"));
@@ -84,6 +85,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Colores />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/Banners"
+              element={
+                <PrivateRoute>
+                  <Banners />
                 </PrivateRoute>
               }
             />

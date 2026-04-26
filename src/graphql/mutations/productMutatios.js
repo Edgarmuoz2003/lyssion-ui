@@ -118,6 +118,38 @@ export const DELETE_CATEGORIAS = gql`
   }
 `;
 
+export const SUBIR_BANNERS = gql`
+  mutation SubirBanners($archivos: [Upload!]!) {
+    subirBanners(archivos: $archivos) {
+      id
+      nombre
+      url
+      public_id
+      activo
+      posicion
+    }
+  }
+`;
+
+export const PUBLICAR_BANNERS = gql`
+  mutation PublicarBanners($ids: [ID!]!, $modo: String!) {
+    publicarBanners(ids: $ids, modo: $modo) {
+      id
+      nombre
+      url
+      public_id
+      activo
+      posicion
+    }
+  }
+`;
+
+export const DELETE_BANNERS = gql`
+  mutation DeleteBanners($ids: [ID!]!) {
+    deleteBanners(ids: $ids)
+  }
+`;
+
 export const DELETE_USUARIO = gql`
   mutation DeleteUsuarios($id: ID!) {
     deleteUsuario(id: $id)

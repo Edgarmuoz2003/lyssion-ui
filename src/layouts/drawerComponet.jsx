@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { HiColorSwatch } from "react-icons/hi";
 import { TbRulerMeasure } from "react-icons/tb";
 import { MdCategory } from "react-icons/md";
-import { FaUsers, FaClipboardList } from "react-icons/fa";
+import { FaUsers, FaClipboardList, FaImages } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const DrawerContent = styled.div`
@@ -75,6 +75,9 @@ const DrawerComponent = ({ open, onClose }) => {
         </DrawerLinkButton>
         <DrawerLinkButton size="large" type="text" icon={<MdCategory />} onClick={() => handleNavigate("/Categorias")}>
           Categorías
+        </DrawerLinkButton>
+        <DrawerLinkButton size="large" type="text" icon={<FaImages />} onClick={() => handleNavigate("/Banners")}>
+          Banners
         </DrawerLinkButton>
         <DrawerLinkButton size="large" type="text" icon={<FaUsers />} onClick={() => handleNavigate("/Usuarios")}>
           Usuarios

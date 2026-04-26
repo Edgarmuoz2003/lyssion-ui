@@ -661,15 +661,22 @@ a {
 }
 
 .baner-home-inicio {
-  height: clamp(320px, 55vh, 620px);
+  height: clamp(520px, 72vw, 900px);
   background-color: #151515;
   border-bottom: 1px solid var(--line);
+}
+
+.baner-home-inicio .carousel,
+.baner-home-inicio .carousel-inner {
+  height: 100%;
+  width: 100%;
 }
 
 .baner-home-inicio .carousel-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .section-valor-home,
@@ -955,6 +962,73 @@ a {
   background: #f8f2e6;
 }
 
+.banner-config-page {
+  padding-bottom: 3rem;
+}
+
+.banner-config-card,
+.banner-config-section {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.08);
+}
+
+.banner-config-card h2,
+.banner-config-section h2 {
+  color: var(--text-main);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.banner-config-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+}
+
+.banner-config-help {
+  color: #5d6670;
+  margin-bottom: 0;
+}
+
+.banner-thumb {
+  aspect-ratio: 3 / 2;
+  background: #111;
+  border: 1px solid #d8e0e8;
+  border-radius: 8px;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  width: 100%;
+}
+
+.banner-thumb img {
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+}
+
+.banner-thumb-button {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.banner-thumb-button:hover,
+.banner-thumb-button:focus-visible,
+.banner-thumb-button.is-selected {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 3px rgba(202, 164, 55, 0.28);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.banner-thumb-current {
+  border-color: var(--accent-gold);
+}
+
 .btn-primary {
   background: var(--brand) !important;
   border-color: var(--brand) !important;
@@ -992,7 +1066,7 @@ a {
 
 @media (max-width: 768px) {
   .baner-home-inicio {
-    height: 300px;
+    height: clamp(360px, 95vw, 560px);
   }
 
   .banner-title {
