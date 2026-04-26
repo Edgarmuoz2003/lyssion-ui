@@ -1,14 +1,12 @@
 import { Container, Button, Row, Col } from "react-bootstrap";
-import { useEffect, useMemo, useState, useCallback } from "react";
-import styled from "styled-components";
+import { useEffect, useMemo, useState } from "react";
 import { IoMdAdd } from "react-icons/io";
-import { FaCog, FaSearch } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import ModalCrear from "../forms/crearProducto";
 import ProductCard from "../layouts/poducto";
 import { useProductosStore } from "../utils/hooks/useProductosStore";
 import SpinnerComponet from "../layouts/spinnerComponent";
 import AlertComponent from "../layouts/alertComponent";
-import DrawerComponent from "../layouts/drawerComponet";
 
 const getNombreFilterValue = (where) => {
   if (!where || typeof where !== "object") return "";
@@ -22,55 +20,8 @@ const getNombreFilterValue = (where) => {
   return "";
 };
 
-const CogIconButton = styled.span.attrs({
-  role: "button",
-  tabIndex: 0,
-})`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #10243e;
-  cursor: pointer;
-  transition: color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-  border: 1px solid #d8e0e8;
-  border-radius: 12px;
-  width: 44px;
-  height: 44px;
-  background: #fff;
-
-  &:hover {
-    color: #193f66;
-    border-color: #193f66;
-  }
-
-  &:focus-visible {
-    outline: 2px solid #0d6efd;
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-`;
-
 const Configuraciones = () => {
   const [show, setShow] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleToggleDrawer = useCallback(() => {
-    setIsOpen((prevOpen) => !prevOpen);
-  }, []);
-
-  const handleCloseDrawer = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  const handleIconKeyDown = useCallback(
-    (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        handleToggleDrawer();
-      }
-    },
-    [handleToggleDrawer]
-  );
 
   const {
     productos,
@@ -105,12 +56,11 @@ const Configuraciones = () => {
   }, [productos, searchTerm]);
 
   const handleSearchChange = (event) => {
-    const value = event.target.value;
-    setSearchTerm(value);
+    setSearchTerm(event.target.value);
   };
 
   if (loading) return <SpinnerComponet />;
-  if (error)
+  if (error) {
     return (
       <AlertComponent
         variant="danger"
@@ -120,15 +70,12 @@ const Configuraciones = () => {
         {error.message}
       </AlertComponent>
     );
+  }
 
   return (
     <>
       <Container className="config-toolbar-wrap">
         <div className="productos_header config-toolbar">
-          <CogIconButton onClick={handleToggleDrawer} onKeyDown={handleIconKeyDown}>
-            <FaCog size={24} />
-          </CogIconButton>
-          
           <div className="input-icon config-search">
             <FaSearch size={18} className="icono-buscar" />
             <input
@@ -168,8 +115,6 @@ const Configuraciones = () => {
           </div>
         )}
       </Container>
-
-      <DrawerComponent open={isOpen} onClose={handleCloseDrawer} />
     </>
   );
 };

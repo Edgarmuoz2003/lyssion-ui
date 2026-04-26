@@ -1,15 +1,12 @@
-import catPijamas from "@/assets/catPijamas.jpg";
-import catCasual from "@/assets/catCasual.jpg";
-import catDeportiva from "@/assets/catDeportiva.jpg";
+import { useQuery } from "@apollo/client";
 import { Link } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import styled from "styled-components";
-
-const categoriesData = [
-  { name: "Pijamas", path: "/Pijamas", image: catPijamas, alt: "categoria pijamas" },
-  { name: "Casual", path: "/Casual", image: catCasual, alt: "categoria casual" },
-  { name: "Deportivo", path: "/Deportiva", image: catDeportiva, alt: "categoria deportiva" },
-];
+import { GET_CATEGORIA_MENU_IMAGENES_ACTIVAS } from "../../../graphql/queries/productQueries";
+import {
+  CATEGORY_MENU_ITEMS,
+  getCategoryMenuKey,
+} from "../../../utils/categoryMenuConfig";
 
 const Section = styled.section`
   padding: 40px 0;
@@ -77,16 +74,31 @@ const CategoryCard = styled(Link)`
 `;
 
 const Categorias = () => {
+  const { data } = useQuery(GET_CATEGORIA_MENU_IMAGENES_ACTIVAS, {
+    fetchPolicy: "cache-and-network",
+  });
+
+  const activeImagesByKey = new Map(
+    (data?.categoriaMenuImagenesActivas || []).map((image) => [
+      getCategoryMenuKey(image.categoria?.nombre),
+      image,
+    ])
+  );
+
   return (
     <Section>
       <Container>
         <CategoryGrid>
-          {categoriesData.map((cat) => (
+          {CATEGORY_MENU_ITEMS.map((cat) => {
+            const activeImage = activeImagesByKey.get(cat.key);
+
+            return (
             <CategoryCard key={cat.name} to={cat.path}>
-              <CategoryImage src={cat.image} alt={cat.alt} />
+              <CategoryImage src={activeImage?.url || cat.image} alt={cat.alt} />
               <CategoryTitle>{cat.name}</CategoryTitle>
             </CategoryCard>
-          ))}
+            );
+          })}
         </CategoryGrid>
       </Container>
     </Section>

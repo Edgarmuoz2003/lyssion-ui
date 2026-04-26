@@ -924,6 +924,110 @@ a {
   transform: translateY(-2px);
 }
 
+.config-page-main {
+  margin-left: 76px;
+  transition: margin-left 0.22s ease;
+}
+
+.config-page-main.sidebar-open {
+  margin-left: 280px;
+}
+
+.config-sidebar {
+  background: #ffffff;
+  border-right: 1px solid var(--line);
+  bottom: 0;
+  box-shadow: 8px 0 18px rgba(17, 17, 17, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  left: 0;
+  padding: 0.85rem;
+  position: fixed;
+  top: 76px;
+  transition: width 0.22s ease;
+  width: 76px;
+  z-index: 1020;
+}
+
+.config-sidebar.is-open {
+  width: 280px;
+}
+
+.config-sidebar-toggle {
+  align-items: center;
+  background: var(--brand);
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  color: #f3dfab;
+  display: inline-flex;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.config-sidebar-toggle:hover,
+.config-sidebar-toggle:focus-visible {
+  background: var(--accent-gold);
+  color: #19140c;
+  outline: none;
+}
+
+.config-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.config-sidebar-link {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #10243e;
+  display: flex;
+  gap: 0.75rem;
+  min-height: 44px;
+  overflow: hidden;
+  padding: 0 0.75rem;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.config-sidebar-link:hover,
+.config-sidebar-link:focus-visible,
+.config-sidebar-link.is-active {
+  background: #f4f7fb;
+  border-color: var(--accent-gold);
+  color: #10243e;
+  outline: none;
+}
+
+.config-sidebar-icon {
+  align-items: center;
+  color: #193f66;
+  display: inline-flex;
+  flex: 0 0 20px;
+  font-size: 20px;
+  justify-content: center;
+}
+
+.config-sidebar-label {
+  font-weight: 700;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.config-sidebar.is-collapsed .config-sidebar-link {
+  justify-content: center;
+  padding: 0;
+}
+
+.config-sidebar.is-collapsed .config-sidebar-label {
+  opacity: 0;
+  width: 0;
+}
+
 .config-toolbar-wrap {
   margin-top: 1.2rem;
   margin-bottom: 0.8rem;
@@ -947,19 +1051,6 @@ a {
 
 .config-create-btn:hover {
   background: #1f1f1f !important;
-}
-
-.config-drawer .ant-drawer-header {
-  border-bottom: 1px solid var(--line);
-}
-
-.config-drawer .ant-drawer-title {
-  color: var(--text-main);
-  font-weight: 700;
-}
-
-.config-drawer .ant-drawer-body {
-  background: #f8f2e6;
 }
 
 .banner-config-page {
@@ -1029,6 +1120,63 @@ a {
   border-color: var(--accent-gold);
 }
 
+.category-menu-current h3 {
+  color: var(--text-main);
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0.65rem 0 0;
+  text-align: center;
+}
+
+.category-menu-thumb {
+  aspect-ratio: 3 / 4;
+  background: #111;
+  border: 1px solid #d8e0e8;
+  border-radius: 8px;
+  display: grid;
+  overflow: hidden;
+  padding: 0;
+  place-items: center;
+  width: 100%;
+}
+
+.category-menu-thumb img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
+}
+
+.category-menu-thumb span {
+  color: #f3dfab;
+  font-weight: 700;
+}
+
+.category-menu-thumb-button {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.category-menu-thumb-button:hover,
+.category-menu-thumb-button:focus-visible,
+.category-menu-thumb-button.is-selected {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 3px rgba(202, 164, 55, 0.28);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.category-publish-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.category-publish-controls .form-select {
+  min-width: 220px;
+}
+
 .btn-primary {
   background: var(--brand) !important;
   border-color: var(--brand) !important;
@@ -1065,6 +1213,27 @@ a {
 }
 
 @media (max-width: 768px) {
+  .config-page-main,
+  .config-page-main.sidebar-open {
+    margin-left: 64px;
+  }
+
+  .config-sidebar,
+  .config-sidebar.is-open {
+    padding: 0.6rem;
+    top: 66px;
+    width: 64px;
+  }
+
+  .config-sidebar-label {
+    display: none;
+  }
+
+  .config-sidebar-link {
+    justify-content: center;
+    padding: 0;
+  }
+
   .baner-home-inicio {
     height: clamp(360px, 95vw, 560px);
   }

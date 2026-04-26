@@ -1,22 +1,25 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { lazy, Suspense, useCallback, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PrivateRoute } from "./utils/privateRoutes";
 import SpinnerComponent from "./layouts/spinnerComponent";
 
-// 🪣 Zustand stores
 import { useUsuariosStore } from "./utils/hooks/useUsuariosStore";
 import { useLogindata } from "./utils/hooks/useLoginData";
 
-// 📦 Componentes cargados siempre (layout)
 import Header from "./layouts/header";
 import Footer from "./layouts/footer";
 import KartButton from "./layouts/kartButton";
 import WhatsappButton from "./layouts/whatsappButton";
+import DrawerComponent from "./layouts/drawerComponet";
 
-// 💨 Lazy load para las páginas
 const Home = lazy(() => import("./components/home/home"));
 const Login = lazy(() => import("./components/login"));
 const Pijamas = lazy(() => import("./components/pijamas"));
@@ -28,6 +31,9 @@ const Pedido = lazy(() => import("./components/pedido"));
 const Nosotros = lazy(() => import("./components/nosotros"));
 const Configuraciones = lazy(() => import("./components/configuraciones"));
 const Banners = lazy(() => import("./components/configuracion/banners"));
+const ImagenesCategorias = lazy(() =>
+  import("./components/configuracion/imagenesCategorias")
+);
 const Colores = lazy(() => import("./components/colores"));
 const Tallas = lazy(() => import("./components/tallas"));
 const Categorias = lazy(() => import("./components/categorias"));
@@ -36,21 +42,43 @@ const PedidosList = lazy(() => import("./components/pedidosList"));
 const PoliticaDeDatos = lazy(() => import("./components/PoliticaDeDatos"));
 const DetallesPedido = lazy(() => import("./components/detallesPedido"));
 
-function App() {
-  // Inicializa los estados globales (Zustand)
-  useUsuariosStore();
-  useLogindata();
-  
+const configPaths = new Set([
+  "/Configuraciones",
+  "/Colores",
+  "/Tallas",
+  "/Categorias",
+  "/Banners",
+  "/ImagenesCategorias",
+  "/Usuarios",
+  "/PedidosList",
+]);
+
+const AppContent = () => {
+  const location = useLocation();
+  const [isConfigMenuOpen, setIsConfigMenuOpen] = useState(false);
+  const isConfigRoute = configPaths.has(location.pathname);
+
+  const handleToggleConfigMenu = useCallback(() => {
+    setIsConfigMenuOpen((prevOpen) => !prevOpen);
+  }, []);
 
   return (
     <>
-      <ToastContainer position="bottom-right" />
-      <Router>
-        <Header />
-        <KartButton />
-        <WhatsappButton />
+      <Header />
+      <KartButton />
+      <WhatsappButton />
 
-        {/* 🌀 Suspense muestra un loader mientras carga cada página */}
+      {isConfigRoute && (
+        <DrawerComponent open={isConfigMenuOpen} onToggle={handleToggleConfigMenu} />
+      )}
+
+      <main
+        className={
+          isConfigRoute
+            ? `config-page-main ${isConfigMenuOpen ? "sidebar-open" : "sidebar-collapsed"}`
+            : undefined
+        }
+      >
         <Suspense
           fallback={
             <div className="d-flex justify-content-center align-items-center vh-100 bg-white">
@@ -71,7 +99,6 @@ function App() {
             <Route path="/Nosotros" element={<Nosotros />} />
             <Route path="/politica-de-datos" element={<PoliticaDeDatos />} />
 
-            {/* 🔐 Rutas privadas */}
             <Route
               path="/Configuraciones"
               element={
@@ -93,6 +120,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Banners />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/ImagenesCategorias"
+              element={
+                <PrivateRoute>
+                  <ImagenesCategorias />
                 </PrivateRoute>
               }
             />
@@ -130,8 +165,22 @@ function App() {
             />
           </Routes>
         </Suspense>
+      </main>
 
-        <Footer />
+      <Footer />
+    </>
+  );
+};
+
+function App() {
+  useUsuariosStore();
+  useLogindata();
+
+  return (
+    <>
+      <ToastContainer position="bottom-right" />
+      <Router>
+        <AppContent />
       </Router>
     </>
   );

@@ -1,92 +1,51 @@
-import { Button, Drawer } from "antd";
-import styled from "styled-components";
+import { NavLink } from "react-router-dom";
 import { HiColorSwatch } from "react-icons/hi";
 import { TbRulerMeasure } from "react-icons/tb";
 import { MdCategory } from "react-icons/md";
-import { FaUsers, FaClipboardList, FaImages } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { FaBars, FaClipboardList, FaImages, FaUsers } from "react-icons/fa";
 
-const DrawerContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
+const menuItems = [
+  { path: "/Colores", label: "Colores", icon: <HiColorSwatch /> },
+  { path: "/Tallas", label: "Tallas", icon: <TbRulerMeasure /> },
+  { path: "/Categorias", label: "Categorías", icon: <MdCategory /> },
+  { path: "/Banners", label: "Banners", icon: <FaImages /> },
+  {
+    path: "/ImagenesCategorias",
+    label: "Imágenes de categorías",
+    icon: <FaImages />,
+  },
+  { path: "/Usuarios", label: "Usuarios", icon: <FaUsers /> },
+  { path: "/PedidosList", label: "Órdenes de pedido", icon: <FaClipboardList /> },
+];
 
-const DrawerLinkButton = styled(Button)`
-  && {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
-    width: 100%;
-    padding: 12px 14px;
-    color: #10243e;
-    font-weight: 600;
-    border: 1px solid #d8e0e8;
-    border-radius: 12px;
-    box-shadow: none;
-    background: #fff;
-    text-decoration: none;
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  && svg {
-    font-size: 20px;
-    color: #193f66;
-  }
-
-  &&:hover,
-  &&:focus-visible {
-    color: #10243e;
-    border-color: #193f66;
-    background-color: #f4f7fb;
-  }
-
-  &&:hover svg,
-  &&:focus-visible svg {
-    color: inherit;
-  }
-`;
-
-const DrawerComponent = ({ open, onClose }) => {
-  const navigate = useNavigate();
-
-  const handleNavigate = (path) => {
-    navigate(path);
-    onClose();
-  };
-
+const DrawerComponent = ({ open, onToggle }) => {
   return (
-    <Drawer
-      title="Configuraciones"
-      className="config-drawer"
-      open={open}
-      onClose={onClose}
-      width={320}
-    >
-      <DrawerContent>
-        <DrawerLinkButton size="large" type="text" icon={<HiColorSwatch />} onClick={() => handleNavigate("/Colores")}>
-          Colores
-        </DrawerLinkButton>
-        <DrawerLinkButton size="large" type="text" icon={<TbRulerMeasure />} onClick={() => handleNavigate("/Tallas")}>
-          Tallas
-        </DrawerLinkButton>
-        <DrawerLinkButton size="large" type="text" icon={<MdCategory />} onClick={() => handleNavigate("/Categorias")}>
-          Categorías
-        </DrawerLinkButton>
-        <DrawerLinkButton size="large" type="text" icon={<FaImages />} onClick={() => handleNavigate("/Banners")}>
-          Banners
-        </DrawerLinkButton>
-        <DrawerLinkButton size="large" type="text" icon={<FaUsers />} onClick={() => handleNavigate("/Usuarios")}>
-          Usuarios
-        </DrawerLinkButton>
-        <DrawerLinkButton size="large" type="text" icon={<FaClipboardList />} onClick={() => handleNavigate("/PedidosList")}>
-          Órdenes de pedido
-        </DrawerLinkButton>
-      </DrawerContent>
-    </Drawer>
+    <aside className={`config-sidebar ${open ? "is-open" : "is-collapsed"}`}>
+      <button
+        type="button"
+        className="config-sidebar-toggle"
+        onClick={onToggle}
+        aria-label={open ? "Recoger menú" : "Abrir menú"}
+      >
+        <FaBars />
+      </button>
+
+      <nav className="config-sidebar-nav" aria-label="Opciones de configuración">
+        {menuItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `config-sidebar-link ${isActive ? "is-active" : ""}`
+            }
+            title={!open ? item.label : undefined}
+          >
+            <span className="config-sidebar-icon">{item.icon}</span>
+            <span className="config-sidebar-label">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+    </aside>
   );
 };
 

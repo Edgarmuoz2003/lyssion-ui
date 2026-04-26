@@ -150,6 +150,46 @@ export const DELETE_BANNERS = gql`
   }
 `;
 
+export const SUBIR_CATEGORIA_MENU_IMAGENES = gql`
+  mutation SubirCategoriaMenuImagenes($archivos: [Upload!]!) {
+    subirCategoriaMenuImagenes(archivos: $archivos) {
+      id
+      nombre
+      url
+      public_id
+      activo
+      categoriaId
+      categoria {
+        id
+        nombre
+      }
+    }
+  }
+`;
+
+export const PUBLICAR_CATEGORIA_MENU_IMAGEN = gql`
+  mutation PublicarCategoriaMenuImagen($categoriaId: ID!, $imagenId: ID!) {
+    publicarCategoriaMenuImagen(categoriaId: $categoriaId, imagenId: $imagenId) {
+      id
+      nombre
+      url
+      public_id
+      activo
+      categoriaId
+      categoria {
+        id
+        nombre
+      }
+    }
+  }
+`;
+
+export const DELETE_CATEGORIA_MENU_IMAGENES = gql`
+  mutation DeleteCategoriaMenuImagenes($ids: [ID!]!) {
+    deleteCategoriaMenuImagenes(ids: $ids)
+  }
+`;
+
 export const DELETE_USUARIO = gql`
   mutation DeleteUsuarios($id: ID!) {
     deleteUsuario(id: $id)

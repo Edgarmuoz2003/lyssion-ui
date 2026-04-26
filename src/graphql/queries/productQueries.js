@@ -54,6 +54,40 @@ export const GET_BANNERS_ACTIVOS = gql`
   }
 `;
 
+export const GET_CATEGORIA_MENU_IMAGENES = gql`
+  query GetCategoriaMenuImagenes {
+    categoriaMenuImagenes {
+      id
+      nombre
+      url
+      public_id
+      activo
+      categoriaId
+      categoria {
+        id
+        nombre
+      }
+    }
+  }
+`;
+
+export const GET_CATEGORIA_MENU_IMAGENES_ACTIVAS = gql`
+  query GetCategoriaMenuImagenesActivas {
+    categoriaMenuImagenesActivas {
+      id
+      nombre
+      url
+      public_id
+      activo
+      categoriaId
+      categoria {
+        id
+        nombre
+      }
+    }
+  }
+`;
+
 // ACTUALIZADO: Query para obtener productos con la nueva estructura de SKUs
 export const GET_PRODUCTOS = gql`
   query GetProducts($where: JSON) {
