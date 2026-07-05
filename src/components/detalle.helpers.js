@@ -5,6 +5,56 @@ export const currencyFormatter = new Intl.NumberFormat("es-CO", {
   maximumFractionDigits: 0,
 });
 
+export const getPriceModeLabel = (priceMode) =>
+  priceMode === "mayorista" ? "al por mayor" : "al detal";
+
+export const getVariationPriceByMode = (variacion, priceMode = "detal") => {
+  const detal = Number(variacion?.precio);
+  const mayorista = Number(variacion?.precioMayorista);
+
+  if (
+    priceMode === "mayorista" &&
+    Number.isFinite(mayorista) &&
+    mayorista > 0
+  ) {
+    return mayorista;
+  }
+
+  return Number.isFinite(detal) ? detal : null;
+};
+
+export const getProductPriceByMode = (producto, priceMode = "detal") => {
+  const prices =
+    producto?.variaciones
+      ?.map((variacion) => getVariationPriceByMode(variacion, priceMode))
+      .filter((precio) => Number.isFinite(precio)) || [];
+
+  return prices.length > 0 ? Math.min(...prices) : null;
+};
+
+export const getCheapestVariationByMode = (
+  variaciones = [],
+  priceMode = "detal",
+) => {
+  return (variaciones || []).reduce((cheapest, variacion) => {
+    const currentPrice = getVariationPriceByMode(variacion, priceMode);
+    if (!Number.isFinite(currentPrice)) {
+      return cheapest;
+    }
+
+    if (!cheapest) {
+      return variacion;
+    }
+
+    const cheapestPrice = getVariationPriceByMode(cheapest, priceMode);
+    if (!Number.isFinite(cheapestPrice) || currentPrice < cheapestPrice) {
+      return variacion;
+    }
+
+    return cheapest;
+  }, null);
+};
+
 export const getPrincipalImage = (colorEntry) => {
   if (!colorEntry?.imagenes?.length) return null;
   return (
@@ -54,7 +104,52 @@ export const buildEditDraft = (producto) => {
           tallaId: variacion.infoTalla?.id,
           tallaNombre: variacion.infoTalla?.nombre,
           precio: Number(variacion.precio) || 0,
+          precioMayorista:
+            Number(variacion.precioMayorista) > 0
+              ? Number(variacion.precioMayorista)
+              : "",
           stock: Number(variacion.stock) || 0,
+        })),
+      };
+    }),
+  };
+};
+
+export const buildProductoUpdateInput = (draft) => {
+  if (!draft) return null;
+
+  return {
+    nombre: draft.nombre.trim(),
+    descripcion: draft.descripcion.trim(),
+    categoriaId: draft.categoriaId,
+    colores: draft.colores.map((color) => {
+      const normalizedImages = ensurePrincipalImage(color.imagenes || []);
+
+      return {
+        id: color.id || undefined,
+        colorId: color.colorId,
+        imagenes: normalizedImages.map((img) =>
+          img.isNew
+            ? {
+                archivo: img.file,
+                isPrincipal: Boolean(img.isPrincipal),
+              }
+            : {
+                id: img.id,
+                isPrincipal: Boolean(img.isPrincipal),
+              },
+        ),
+        variaciones: color.variaciones.map((variacion) => ({
+          id: variacion.id || undefined,
+          tallaId: variacion.tallaId,
+          precio: Number(variacion.precio),
+          precioMayorista:
+            variacion.precioMayorista === "" ||
+            variacion.precioMayorista === null ||
+            variacion.precioMayorista === undefined
+              ? null
+              : Number(variacion.precioMayorista),
+          stock: Number(variacion.stock),
         })),
       };
     }),

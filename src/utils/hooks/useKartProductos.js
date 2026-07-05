@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useMainStore } from "../../store/useMainStore";
+import { getVariationPriceByMode } from "@/components/detalle.helpers";
 
 const emitKartUpdated = () => {
   if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
@@ -12,11 +13,49 @@ const toNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const resolveKartProductPrice = (producto, priceMode) => {
+  const resolvedPrice = getVariationPriceByMode(
+    {
+      precio: producto?.precioDetal ?? producto?.precio,
+      precioMayorista: producto?.precioMayorista,
+    },
+    priceMode,
+  );
+
+  return Number.isFinite(resolvedPrice)
+    ? resolvedPrice
+    : toNumber(producto?.precio);
+};
+
 export function useKartProductos() {
   const kartProductos = useMainStore((state) => state.kartProductos);
   const setKartProductos = useMainStore((state) => state.setKartProductos);
+  const priceMode = useMainStore((state) => state.priceMode);
 
   const safeKartProductos = Array.isArray(kartProductos) ? kartProductos : [];
+  const resolvedKartProductos = useMemo(() => {
+    return safeKartProductos.map((producto) => ({
+      ...producto,
+      precio: resolveKartProductPrice(producto, priceMode),
+    }));
+  }, [safeKartProductos, priceMode]);
+
+  useEffect(() => {
+    if (!safeKartProductos.length) return;
+
+    const shouldSyncPrices = safeKartProductos.some((producto) => {
+      return toNumber(producto?.precio) !== resolveKartProductPrice(producto, priceMode);
+    });
+
+    if (!shouldSyncPrices) return;
+
+    setKartProductos(
+      safeKartProductos.map((producto) => ({
+        ...producto,
+        precio: resolveKartProductPrice(producto, priceMode),
+      })),
+    );
+  }, [priceMode, safeKartProductos, setKartProductos]);
 
   const hasProducts = useMemo(
     () => safeKartProductos.length > 0,
@@ -24,10 +63,16 @@ export function useKartProductos() {
   );
 
   const total = useMemo(() => {
-    return safeKartProductos.reduce((acc, producto) => {
+    return resolvedKartProductos.reduce((acc, producto) => {
       const precio = toNumber(producto?.precio);
       const cantidad = toNumber(producto?.cantidad);
       return acc + precio * cantidad;
+    }, 0);
+  }, [resolvedKartProductos]);
+
+  const totalQuantity = useMemo(() => {
+    return safeKartProductos.reduce((acc, producto) => {
+      return acc + toNumber(producto?.cantidad);
     }, 0);
   }, [safeKartProductos]);
 
@@ -82,9 +127,10 @@ export function useKartProductos() {
   );
 
   return {
-    kartProductos: safeKartProductos,
+    kartProductos: resolvedKartProductos,
     hasProducts,
     total,
+    totalQuantity,
     addOrUpdateProduct,
     clearKart,
     removeProductAt,

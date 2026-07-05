@@ -9,12 +9,14 @@ const ProductoBaseFields = ({
   categorias = [],
   onFieldChange,
   formattedPrice,
+  priceTitle,
 }) => {
   if (!isEditing) {
     return (
       <>
         <h2>{producto?.nombre}</h2>
         <p className="text-muted">{producto?.descripcion}</p>
+        <p className="text-muted mb-1">{priceTitle}</p>
         <h3 className="price my-3">{formattedPrice}</h3>
       </>
     );

@@ -2,6 +2,7 @@ import { Container, Button, Row, Col } from "react-bootstrap";
 import { useEffect, useMemo, useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { FaSearch } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import ModalCrear from "../forms/crearProducto";
 import ProductCard from "../layouts/poducto";
 import { useProductosStore } from "../utils/hooks/useProductosStore";
@@ -21,6 +22,7 @@ const getNombreFilterValue = (where) => {
 };
 
 const Configuraciones = () => {
+  const navigate = useNavigate();
   const [show, setShow] = useState(false);
 
   const {
@@ -37,6 +39,12 @@ const Configuraciones = () => {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+  const handleCreated = (productoId) => {
+    setShow(false);
+    if (productoId) {
+      navigate(`/detalles/${productoId}`);
+    }
+  };
 
   useEffect(() => {
     // En Configuraciones usamos filtro local para evitar enviar operadores
@@ -89,7 +97,7 @@ const Configuraciones = () => {
             <IoMdAdd size={22} /> Crear producto
           </Button>
         </div>
-        <ModalCrear handleClose={handleClose} show={show} />
+        <ModalCrear handleClose={handleClose} show={show} onCreated={handleCreated} />
       </Container>
 
       <Container className="productos_container catalog-section">

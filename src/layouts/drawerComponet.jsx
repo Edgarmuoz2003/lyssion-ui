@@ -2,9 +2,10 @@ import { NavLink } from "react-router-dom";
 import { HiColorSwatch } from "react-icons/hi";
 import { TbRulerMeasure } from "react-icons/tb";
 import { MdCategory } from "react-icons/md";
-import { FaBars, FaClipboardList, FaImages, FaUsers } from "react-icons/fa";
+import { FaBars, FaClipboardList, FaDollarSign, FaImages, FaUsers } from "react-icons/fa";
 
 const menuItems = [
+  { path: "/PreciosProductos", label: "Precios productos", icon: <FaDollarSign /> },
   { path: "/Colores", label: "Colores", icon: <HiColorSwatch /> },
   { path: "/Tallas", label: "Tallas", icon: <TbRulerMeasure /> },
   { path: "/Categorias", label: "Categorías", icon: <MdCategory /> },

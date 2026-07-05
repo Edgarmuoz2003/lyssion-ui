@@ -1,5 +1,6 @@
 import AlertComponent from "@/layouts/alertComponent";
 import ProductCard from "@/layouts/poducto";
+import PriceModeBanner from "@/layouts/priceModeBanner";
 import SpinnerComponet from "@/layouts/spinnerComponent";
 import { useProductosStore } from "@/utils/hooks/useProductosStore";
 import { useMemo, useState } from "react";
@@ -44,6 +45,7 @@ const Nuestros_productos = () => {
     <>
       <h1 className="titulo-home-inicio">Nuestros productos</h1>
       <Container>
+        <PriceModeBanner />
         <div className="home-search-wrapper">
           <label className="home-search-label" htmlFor="home-product-search">
             ¿Qué estás buscando?

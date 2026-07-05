@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 const savedToken = localStorage.getItem("token");
 const savedUser = JSON.parse(localStorage.getItem("user"));
+const savedPriceMode = localStorage.getItem("priceMode") || "detal";
 
 const readKart = () => {
   try {
@@ -21,11 +22,17 @@ export const useMainStore = create((set, get) => ({
   productoWhere: {},
   usuarios: [],
   imgenFondo: null,
+  priceMode: savedPriceMode,
 
   setProductoWhere: (where) => set({ productoWhere: where ?? {} }),
   setUsuarios: (usuarios) => set({ usuarios }),
   setImagenFondo: (imagenFondo) => set({ imagenFondo }),
   setLoginData: (loginData) => set({ loginData }),
+  setPriceMode: (priceMode) =>
+    set(() => {
+      localStorage.setItem("priceMode", priceMode);
+      return { priceMode };
+    }),
   setKartProductos: (kartProductos) =>
     set(() => {
       localStorage.setItem("kartProducts", JSON.stringify(kartProductos));

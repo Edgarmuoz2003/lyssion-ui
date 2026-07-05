@@ -1,14 +1,15 @@
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
-
-const currencyFormatter = new Intl.NumberFormat("es-CO", {
-  style: "currency",
-  currency: "COP",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+import { useMainStore } from "@/store/useMainStore";
+import {
+  currencyFormatter,
+  getProductPriceByMode,
+  getPriceModeLabel,
+} from "@/components/detalle.helpers";
 
 const ProductCard = ({ producto }) => {
+  const priceMode = useMainStore((state) => state.priceMode);
+
   if (!producto?.nombre) {
     return null;
   }
@@ -26,13 +27,8 @@ const ProductCard = ({ producto }) => {
 
   const imageUrl = principalImage?.url;
 
-  const variationPrices =
-    producto.variaciones
-      ?.map((variacion) => Number(variacion?.precio))
-      .filter((precio) => Number.isFinite(precio)) || [];
-
-  const minPrice =
-    variationPrices.length > 0 ? Math.min(...variationPrices) : null;
+  const minPrice = getProductPriceByMode(producto, priceMode);
+  const priceLabel = getPriceModeLabel(priceMode);
 
   return (
     <Link
@@ -58,6 +54,9 @@ const ProductCard = ({ producto }) => {
             {producto.nombre}
           </Card.Title>
 
+          <Card.Text as="span" className="text-muted small mb-1">
+            Precio {priceLabel}
+          </Card.Text>
           <Card.Text as="p" className="producto-card-precio mt-auto">
             {minPrice !== null
               ? currencyFormatter.format(minPrice)

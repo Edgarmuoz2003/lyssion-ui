@@ -1,8 +1,11 @@
-import { Container, Button, Table, Row, Col } from "react-bootstrap";
+import { useState } from "react";
+import { Container, Button, Table, Row, Col, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaTrash, FaCreditCard } from "react-icons/fa";
 import ValoresLyssion from "../layouts/valoresLyssion";
 import { useKartProductos } from "@/utils/hooks/useKartProductos";
+import { useMainStore } from "@/store/useMainStore";
+import { getPriceModeLabel } from "@/components/detalle.helpers";
 
 const formatPrice = (value) => {
   const numericValue = Number(value) || 0;
@@ -15,8 +18,18 @@ const formatPrice = (value) => {
 };
 
 const Carrito = () => {
-  const { kartProductos, hasProducts, total, clearKart } = useKartProductos();
+  const { kartProductos, hasProducts, total, totalQuantity, clearKart } =
+    useKartProductos();
   const navigate = useNavigate();
+  const priceMode = useMainStore((state) => state.priceMode);
+  const setPriceMode = useMainStore((state) => state.setPriceMode);
+  const [showWholesaleAlert, setShowWholesaleAlert] = useState(false);
+
+  const isWholesaleMode = priceMode === "mayorista";
+  const isWholesaleRequirementMet = totalQuantity >= 6;
+  const priceTitle = `Aplicando precios ${getPriceModeLabel(priceMode)}`;
+  const nextPriceMode = isWholesaleMode ? "detal" : "mayorista";
+  const nextPriceModeLabel = getPriceModeLabel(nextPriceMode);
 
   const fullName = (producto) =>
     `${producto?.nombre} talla ${producto?.talla} color ${producto?.color}`;
@@ -25,6 +38,15 @@ const Carrito = () => {
     if (window.confirm("Estas seguro de que deseas vaciar el carrito?")) {
       clearKart();
     }
+  };
+
+  const handleOrder = () => {
+    if (isWholesaleMode && !isWholesaleRequirementMet) {
+      setShowWholesaleAlert(true);
+      return;
+    }
+
+    navigate("/pedido");
   };
 
   return (
@@ -40,6 +62,22 @@ const Carrito = () => {
         </div>
       ) : (
         <>
+          <div className="mb-3">
+            <h4>{priceTitle}</h4>
+            {isWholesaleMode ? (
+              <p className="text-muted mb-0">
+                Debes tener al menos 6 unidades en total para realizar el pedido
+                con precio al por mayor.
+              </p>
+            ) : null}
+            <Button
+              variant="outline-dark"
+              className="mt-3"
+              onClick={() => setPriceMode(nextPriceMode)}
+            >
+              Cambiar a modo {nextPriceModeLabel}
+            </Button>
+          </div>
           <Table striped bordered hover responsive>
             <thead>
               <tr>
@@ -101,11 +139,41 @@ const Carrito = () => {
               <Button variant="danger" onClick={handleResetKart} className="me-2">
                 <FaTrash /> Vaciar carrito
               </Button>
-              <Button variant="dark" onClick={() => navigate("/pedido")}>
+              <Button
+                variant="dark"
+                onClick={handleOrder}
+              >
                 <FaCreditCard /> Realizar pedido
               </Button>
             </Col>
           </Row>
+          <Modal
+            show={showWholesaleAlert}
+            onHide={() => setShowWholesaleAlert(false)}
+            centered
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Pedido mayorista</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              Solo tienes {totalQuantity} productos en el carrito, en modo
+              mayorista debes tener minimo 6.
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="outline-dark"
+                onClick={() => {
+                  setPriceMode("detal");
+                  setShowWholesaleAlert(false);
+                }}
+              >
+                Cambiar a modo detal
+              </Button>
+              <Button variant="dark" onClick={() => setShowWholesaleAlert(false)}>
+                Entendido
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </>
       )}
     </Container>

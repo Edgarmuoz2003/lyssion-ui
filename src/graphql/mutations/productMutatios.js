@@ -11,6 +11,7 @@ export const CREATE_PRODUCTS = gql`
       variaciones {
         id
         precio
+        precioMayorista
         stock
       }
     }
@@ -49,6 +50,7 @@ export const UPDATE_PRODUCTS = gql`
       variaciones {
         id
         precio
+        precioMayorista
         stock
         infoTalla {
           id

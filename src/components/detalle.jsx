@@ -29,15 +29,20 @@ import {
   GET_TALLAS,
 } from "@/graphql/queries/productQueries";
 import {
+  getCheapestVariationByMode,
   currencyFormatter,
+  getPriceModeLabel,
+  getVariationPriceByMode,
   getPrincipalImage,
 } from "@/components/detalle.helpers";
 import { useDetalleEditor } from "@/components/detalle/useDetalleEditor";
+import { useMainStore } from "@/store/useMainStore";
 
 const Detalle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useLogindata();
+  const priceMode = useMainStore((state) => state.priceMode);
 
   const [selectedColorEntry, setSelectedColorEntry] = useState(null);
   const [selectedTalla, setSelectedTalla] = useState(null);
@@ -98,6 +103,7 @@ const Detalle = () => {
     newColorId,
     newTallaId,
     newTallaPrice,
+    newTallaWholesalePrice,
     newTallaStock,
     availableColorOptions,
     availableTallaOptionsForSelectedColor,
@@ -123,6 +129,7 @@ const Detalle = () => {
     setNewColorFiles,
     setNewTallaId,
     setNewTallaPrice,
+    setNewTallaWholesalePrice,
     setNewTallaStock,
     setEditSelectedColorId,
   } = useDetalleEditor({
@@ -138,20 +145,47 @@ const Detalle = () => {
 
     if (!producto?.coloresDisponibles?.length) {
       setSelectedColorEntry(null);
+      setSelectedTalla(null);
       previousColorIdRef.current = null;
       return;
     }
 
+    const cheapestVariation = getCheapestVariationByMode(
+      producto?.variaciones || [],
+      priceMode,
+    );
+
+    const preferredColorId = cheapestVariation?.infoColor?.id;
+    const preferredTalla = cheapestVariation?.infoTalla
+      ? {
+          id: cheapestVariation.infoTalla.id,
+          nombre: cheapestVariation.infoTalla.nombre,
+        }
+      : null;
+
+    const preferredColorEntry =
+      producto.coloresDisponibles.find(
+        (entry) => Number(entry?.color?.id) === Number(preferredColorId),
+      ) || producto.coloresDisponibles[0];
+
     setSelectedColorEntry((prev) => {
       if (!prev) {
-        return producto.coloresDisponibles[0];
+        return preferredColorEntry;
       }
+
       const match = producto.coloresDisponibles.find(
         (entry) => entry?.color?.id === prev?.color?.id,
       );
-      return match || producto.coloresDisponibles[0];
+      return match || preferredColorEntry;
     });
-  }, [producto, isEditing]);
+
+    setSelectedTalla((prev) => {
+      if (prev) {
+        return prev;
+      }
+      return preferredTalla;
+    });
+  }, [producto, isEditing, priceMode]);
 
   useEffect(() => {
     if (isEditing) return;
@@ -162,7 +196,6 @@ const Detalle = () => {
     const currentColorId = selectedColorEntry?.color?.id || null;
     if (previousColorIdRef.current !== currentColorId) {
       previousColorIdRef.current = currentColorId;
-      setSelectedTalla(null);
     }
   }, [selectedColorEntry, isEditing]);
 
@@ -201,16 +234,18 @@ const Detalle = () => {
 
   const allVariationPrices =
     producto?.variaciones
-      ?.map((variacion) => Number(variacion?.precio))
+      ?.map((variacion) => getVariationPriceByMode(variacion, priceMode))
       .filter((precio) => Number.isFinite(precio)) || [];
 
   const colorVariationPrices =
     selectedColorVariations
-      ?.map((variacion) => Number(variacion?.precio))
+      ?.map((variacion) => getVariationPriceByMode(variacion, priceMode))
       .filter((precio) => Number.isFinite(precio)) || [];
 
-  const priceToShow = Number.isFinite(Number(selectedVariation?.precio))
-    ? Number(selectedVariation.precio)
+  const selectedVariationPrice = getVariationPriceByMode(selectedVariation, priceMode);
+
+  const priceToShow = Number.isFinite(Number(selectedVariationPrice))
+    ? Number(selectedVariationPrice)
     : colorVariationPrices.length > 0
       ? Math.min(...colorVariationPrices)
       : allVariationPrices.length > 0
@@ -223,6 +258,19 @@ const Detalle = () => {
 
   const handleColorClick = (colorEntry) => {
     setSelectedColorEntry(colorEntry);
+    const colorVariations = (producto?.variaciones || []).filter(
+      (variacion) =>
+        Number(variacion?.infoColor?.id) === Number(colorEntry?.color?.id),
+    );
+    const cheapestVariation = getCheapestVariationByMode(colorVariations, priceMode);
+    setSelectedTalla(
+      cheapestVariation?.infoTalla
+        ? {
+            id: cheapestVariation.infoTalla.id,
+            nombre: cheapestVariation.infoTalla.nombre,
+          }
+        : null,
+    );
   };
 
   const handleTallaClick = (talla) => {
@@ -261,15 +309,19 @@ const Detalle = () => {
   const handleKartClick = () => {
     if (!validateInputs()) return;
 
-    const variationPrice = Number(selectedVariation?.precio);
+    const variationPrice = getVariationPriceByMode(selectedVariation, priceMode);
     const normalizedPrice = Number.isFinite(variationPrice)
       ? variationPrice
       : priceToShow || 0;
+    const detalPrice = Number(selectedVariation?.precio);
+    const wholesalePrice = Number(selectedVariation?.precioMayorista);
 
     const newProduct = {
       id: producto?.id,
       nombre: producto?.nombre,
       precio: normalizedPrice,
+      precioDetal: Number.isFinite(detalPrice) ? detalPrice : normalizedPrice,
+      precioMayorista: Number.isFinite(wholesalePrice) ? wholesalePrice : null,
       color: selectedColorEntry?.color?.nombre,
       colorId: selectedColorEntry?.color?.id,
       talla: selectedTalla?.nombre,
@@ -316,6 +368,7 @@ const Detalle = () => {
     ? editSelectedColor?.imagenes || []
     : selectedColorEntry?.imagenes || [];
   const colorEntries = isEditing ? editColorEntries : producto.coloresDisponibles || [];
+  const priceTitle = `Precio ${getPriceModeLabel(priceMode)}`;
 
   return (
     <Container className="mt-4">
@@ -365,9 +418,11 @@ const Detalle = () => {
                 height: "100%",
                 minHeight: "400px",
                 backgroundColor: "#f8f9fa",
+                border: "1px dashed #c8c8c8",
+                borderRadius: "8px",
               }}
             >
-              <span className="text-muted">No hay imagen para este color</span>
+              <span className="text-muted">Sin imagen de referencia</span>
             </div>
           )}
 
@@ -402,6 +457,7 @@ const Detalle = () => {
             categorias={categoriasData?.categorias || []}
             onFieldChange={handleDraftFieldChange}
             formattedPrice={formattedPrice}
+            priceTitle={priceTitle}
           />
 
           <hr />
@@ -626,6 +682,15 @@ const Detalle = () => {
 
                 {(editSelectedColor?.variaciones || []).length > 0 ? (
                   <div className="mt-3 d-flex flex-column gap-2">
+                    <div
+                      className="d-flex gap-2 align-items-center text-muted"
+                      style={{ fontSize: 12, fontWeight: 600 }}
+                    >
+                      <div style={{ minWidth: 80 }}>Talla</div>
+                      <div style={{ flex: 1 }}>Precio detal</div>
+                      <div style={{ flex: 1 }}>Precio mayorista</div>
+                      <div style={{ flex: 1 }}>Stock</div>
+                    </div>
                     {editSelectedColor.variaciones.map((variacion) => (
                       <div
                         key={`inputs-${variacion.tallaId}-${variacion.id || "new"}`}
@@ -636,12 +701,26 @@ const Detalle = () => {
                           type="number"
                           min="1"
                           value={variacion.precio}
-                          placeholder="Precio"
+                          placeholder="Precio detal"
                           onChange={(event) =>
                             handleVariationFieldChange(
                               editSelectedColor.colorId,
                               variacion.tallaId,
                               "precio",
+                              event.target.value,
+                            )
+                          }
+                        />
+                        <Input
+                          type="number"
+                          min="1"
+                          value={variacion.precioMayorista}
+                          placeholder="Precio mayorista"
+                          onChange={(event) =>
+                            handleVariationFieldChange(
+                              editSelectedColor.colorId,
+                              variacion.tallaId,
+                              "precioMayorista",
                               event.target.value,
                             )
                           }
@@ -818,12 +897,22 @@ const Detalle = () => {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Precio</Form.Label>
+            <Form.Label>Precio al detal</Form.Label>
             <Form.Control
               type="number"
               min="1"
               value={newTallaPrice}
               onChange={(event) => setNewTallaPrice(event.target.value)}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Precio mayorista</Form.Label>
+            <Form.Control
+              type="number"
+              min="1"
+              value={newTallaWholesalePrice}
+              onChange={(event) => setNewTallaWholesalePrice(event.target.value)}
             />
           </Form.Group>
 

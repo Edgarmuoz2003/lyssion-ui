@@ -3,6 +3,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import ProductCard from "../layouts/poducto";
 import { GET_PRODUCTOS } from "../graphql/queries/productQueries";
+import PriceModeBanner from "../layouts/priceModeBanner";
 
 const Deportiva = () => {
   const { data, loading, error } = useQuery(GET_PRODUCTOS, {
@@ -24,6 +25,7 @@ const Deportiva = () => {
     <section className="catalog-section">
       <h1 className="titulo-home-inicio">Deportiva</h1>
       <Container className="productos_container">
+        <PriceModeBanner />
         <Row className="g-4 pb-5">
           {productosDeportivos.length > 0 ? (
             productosDeportivos.map((producto) => (

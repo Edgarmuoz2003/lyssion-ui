@@ -30,6 +30,9 @@ const Carrito = lazy(() => import("./components/carrito"));
 const Pedido = lazy(() => import("./components/pedido"));
 const Nosotros = lazy(() => import("./components/nosotros"));
 const Configuraciones = lazy(() => import("./components/configuraciones"));
+const PreciosProductos = lazy(() =>
+  import("./components/configuracion/preciosProductos")
+);
 const Banners = lazy(() => import("./components/configuracion/banners"));
 const ImagenesCategorias = lazy(() =>
   import("./components/configuracion/imagenesCategorias")
@@ -44,6 +47,7 @@ const DetallesPedido = lazy(() => import("./components/detallesPedido"));
 
 const configPaths = new Set([
   "/Configuraciones",
+  "/PreciosProductos",
   "/Colores",
   "/Tallas",
   "/Categorias",
@@ -104,6 +108,14 @@ const AppContent = () => {
               element={
                 <PrivateRoute>
                   <Configuraciones />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/PreciosProductos"
+              element={
+                <PrivateRoute>
+                  <PreciosProductos />
                 </PrivateRoute>
               }
             />

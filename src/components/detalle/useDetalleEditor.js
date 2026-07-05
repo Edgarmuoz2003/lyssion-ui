@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { mostrarError, mostrarExito } from "@/utils/hookMensajes";
 import {
   buildEditDraft,
+  buildProductoUpdateInput,
   cleanupDraftObjectUrls,
   ensurePrincipalImage,
   getPrincipalImage,
@@ -27,6 +28,7 @@ export const useDetalleEditor = ({
   const [showAddTallaModal, setShowAddTallaModal] = useState(false);
   const [newTallaId, setNewTallaId] = useState("");
   const [newTallaPrice, setNewTallaPrice] = useState("");
+  const [newTallaWholesalePrice, setNewTallaWholesalePrice] = useState("");
   const [newTallaStock, setNewTallaStock] = useState("10");
 
   useEffect(() => {
@@ -79,6 +81,7 @@ export const useDetalleEditor = ({
     setNewColorFiles([]);
     setNewTallaId("");
     setNewTallaPrice("");
+    setNewTallaWholesalePrice("");
     setNewTallaStock("10");
     setIsEditing(false);
   };
@@ -271,10 +274,13 @@ export const useDetalleEditor = ({
     }
 
     const basePrice = editSelectedColor.variaciones?.[0]?.precio || 0;
+    const baseWholesalePrice =
+      editSelectedColor.variaciones?.[0]?.precioMayorista || "";
     const baseStock = editSelectedColor.variaciones?.[0]?.stock || 10;
 
     setNewTallaId(String(availableTallaOptionsForSelectedColor[0]?.id || ""));
     setNewTallaPrice(String(basePrice));
+    setNewTallaWholesalePrice(String(baseWholesalePrice));
     setNewTallaStock(String(baseStock));
     setShowAddTallaModal(true);
   };
@@ -292,6 +298,7 @@ export const useDetalleEditor = ({
     }
 
     const precio = Number(newTallaPrice);
+    const precioMayorista = Number(newTallaWholesalePrice);
     const stock = Number(newTallaStock);
 
     if (!Number.isInteger(precio) || precio <= 0) {
@@ -301,6 +308,14 @@ export const useDetalleEditor = ({
 
     if (!Number.isInteger(stock) || stock < 0) {
       mostrarError("El stock debe ser un entero mayor o igual a cero.");
+      return;
+    }
+
+    if (
+      newTallaWholesalePrice !== "" &&
+      (!Number.isInteger(precioMayorista) || precioMayorista <= 0)
+    ) {
+      mostrarError("El precio mayorista debe ser un entero mayor que cero.");
       return;
     }
 
@@ -323,6 +338,8 @@ export const useDetalleEditor = ({
                 tallaId: talla.id,
                 tallaNombre: talla.nombre,
                 precio,
+                precioMayorista:
+                  newTallaWholesalePrice === "" ? "" : precioMayorista,
                 stock,
               },
             ],
@@ -334,6 +351,7 @@ export const useDetalleEditor = ({
     setShowAddTallaModal(false);
     setNewTallaId("");
     setNewTallaPrice("");
+    setNewTallaWholesalePrice("");
     setNewTallaStock("10");
   };
 
@@ -426,6 +444,19 @@ export const useDetalleEditor = ({
         }
 
         if (
+          variacion.precioMayorista !== "" &&
+          variacion.precioMayorista !== null &&
+          variacion.precioMayorista !== undefined &&
+          (!Number.isInteger(Number(variacion.precioMayorista)) ||
+            Number(variacion.precioMayorista) <= 0)
+        ) {
+          mostrarError(
+            "Cada talla debe tener un precio mayorista entero mayor que cero o dejarlo vacio."
+          );
+          return false;
+        }
+
+        if (
           !Number.isInteger(Number(variacion.stock)) ||
           Number(variacion.stock) < 0
         ) {
@@ -439,36 +470,7 @@ export const useDetalleEditor = ({
   };
 
   const buildUpdateInput = () => {
-    return {
-      nombre: editDraft.nombre.trim(),
-      descripcion: editDraft.descripcion.trim(),
-      categoriaId: editDraft.categoriaId,
-      colores: editDraft.colores.map((color) => {
-        const normalizedImages = ensurePrincipalImage(color.imagenes || []);
-
-        return {
-          id: color.id || undefined,
-          colorId: color.colorId,
-          imagenes: normalizedImages.map((img) =>
-            img.isNew
-              ? {
-                  archivo: img.file,
-                  isPrincipal: Boolean(img.isPrincipal),
-                }
-              : {
-                  id: img.id,
-                  isPrincipal: Boolean(img.isPrincipal),
-                },
-          ),
-          variaciones: color.variaciones.map((variacion) => ({
-            id: variacion.id || undefined,
-            tallaId: variacion.tallaId,
-            precio: Number(variacion.precio),
-            stock: Number(variacion.stock),
-          })),
-        };
-      }),
-    };
+    return buildProductoUpdateInput(editDraft);
   };
 
   const handleSaveEdit = async () => {
@@ -504,6 +506,7 @@ export const useDetalleEditor = ({
     newColorFiles,
     newTallaId,
     newTallaPrice,
+    newTallaWholesalePrice,
     newTallaStock,
     availableColorOptions,
     availableTallaOptionsForSelectedColor,
@@ -529,6 +532,7 @@ export const useDetalleEditor = ({
     setNewColorFiles,
     setNewTallaId,
     setNewTallaPrice,
+    setNewTallaWholesalePrice,
     setNewTallaStock,
     setEditSelectedColorId,
   };

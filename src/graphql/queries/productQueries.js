@@ -117,6 +117,7 @@ export const GET_PRODUCTOS = gql`
       variaciones {
         id
         precio
+        precioMayorista
         stock
         infoTalla {
           id
@@ -178,6 +179,7 @@ export const GET_ULTIMOS_PRODUCTOS = gql`
       variaciones {
         id
         precio
+        precioMayorista
         stock
         infoTalla {
           id
