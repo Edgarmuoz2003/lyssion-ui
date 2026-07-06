@@ -3,6 +3,12 @@ body {
     padding: 0;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 :root {
   --bg-page: #f7f4ee;
   --bg-surface: #ffffff;
@@ -25,6 +31,18 @@ body {
   font-family: "Segoe UI", "DM Sans", "Trebuchet MS", sans-serif;
 }
 
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1 0 auto;
+  min-width: 0;
+  padding-bottom: 1rem;
+}
+
 a {
   color: inherit;
 }
@@ -44,6 +62,7 @@ a {
     border-radius: 12px;
     border: 1px solid #d8e0e8;
     min-width: 280px;
+    max-width: 100%;
     background: #fff;
 }
 
@@ -106,7 +125,7 @@ a {
   margin: 0 auto;
   justify-content: center;
   align-items: center;
-  width: 20vw;
+  width: min(100%, 420px);
 }
 
 .form-colores form {
@@ -123,13 +142,14 @@ a {
 }
 
 .form-usuarios .card {
-  width: 30vw;
+  width: min(100%, 460px);
   height: auto; /* mejor que forzar 400px si el contenido crece */
 }
 
 .usuarios-list {
   width: 100%;
-  height: 60vh;
+  min-height: 40vh;
+  overflow-x: auto;
 }
 
 .container-login {
@@ -142,8 +162,9 @@ a {
 }
 
 .form-login {
-  width: 400px;
-  height: 60vh;
+  width: min(100%, 400px);
+  min-height: 420px;
+  height: auto;
   border-radius: 20px;
 
   background-color: rgba(255, 255, 255, 0.1); /* Fondo blanco transparente */
@@ -393,7 +414,7 @@ a {
 }
 
 .modal-pedido {
-  width: 100vw !important;
+  width: auto !important;
 }
 
 /* Modal personalizado */
@@ -402,6 +423,8 @@ a {
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
   border: none;
   background: #f8f9fa;
+  max-height: calc(100vh - 1rem);
+  overflow: hidden;
 }
 
 .modal-pedido .modal-header {
@@ -420,6 +443,8 @@ a {
 
 .modal-pedido .modal-body {
   padding: 32px;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 .modal-pedido h4 {
@@ -447,6 +472,32 @@ a {
 .modal-pedido .table td {
   border: none;
   vertical-align: middle;
+}
+
+.pedido-modal-header-grid,
+.pedido-modal-client-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.pedido-modal-header-grid {
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 1fr) minmax(0, 1fr);
+}
+
+.pedido-modal-status-form {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.pedido-modal-status-form > div {
+  min-width: 180px;
+}
+
+.pedido-modal-client-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .modal-pedido .modal-footer {
@@ -480,7 +531,7 @@ a {
   padding: 10px 20px;
   border-radius: 5px;
   text-align: right;
-  font-size: 1.8rem;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
   font-weight: bold;
   border: 2px solid #333;
   box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
@@ -675,7 +726,7 @@ a {
 .baner-home-inicio .carousel-item img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -911,6 +962,8 @@ a {
   color: #efe0ba;
   padding: 2.25rem 0;
   border-top: 1px solid rgba(202, 164, 55, 0.38);
+  flex-shrink: 0;
+  margin-top: auto !important;
 }
 
 .footer-social-link {
@@ -948,6 +1001,7 @@ a {
   transition: width 0.22s ease;
   width: 76px;
   z-index: 1020;
+  overflow-y: auto;
 }
 
 .config-sidebar.is-open {
@@ -1177,6 +1231,71 @@ a {
   min-width: 220px;
 }
 
+.config-page-main h1,
+.app-main h1,
+.app-main h2 {
+  overflow-wrap: anywhere;
+}
+
+.config-page-main .container > .d-flex.justify-content-between.align-items-center,
+.config-page-main .container > .d-flex.align-items-center {
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.form-tallas,
+.form-categorias {
+  margin: 1rem auto;
+  max-width: 420px;
+  width: 100%;
+}
+
+.colores-list,
+.tallas-list,
+.categorias-list,
+.pedidos-table-wrap,
+.table-responsive-safe {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.colores-list table,
+.tallas-list table,
+.categorias-list table,
+.usuarios-list table,
+.pedidos-table-wrap table,
+.table-responsive-safe table {
+  min-width: 560px;
+}
+
+.pedido-summary-item {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.pedido-summary-item span,
+.pedido-summary-item strong,
+.pedido-summary-item h5 {
+  text-align: right;
+}
+
+.pedido-summary-total {
+  background-color: #f0f0f0;
+}
+
+.cart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.cart-actions .btn {
+  margin-right: 0 !important;
+}
+
 .btn-primary {
   background: var(--brand) !important;
   border-color: var(--brand) !important;
@@ -1257,14 +1376,31 @@ a {
 @media (max-width: 768px) {
   .config-page-main,
   .config-page-main.sidebar-open {
-    margin-left: 64px;
+    margin-left: 0;
+    padding-top: 82px;
   }
 
   .config-sidebar,
   .config-sidebar.is-open {
+    bottom: auto;
+    flex-direction: row;
+    gap: 0.5rem;
+    left: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
     padding: 0.6rem;
+    right: 0;
     top: 66px;
-    width: 64px;
+    width: 100%;
+  }
+
+  .config-sidebar-toggle {
+    flex: 0 0 44px;
+  }
+
+  .config-sidebar-nav {
+    flex-direction: row;
+    gap: 0.45rem;
   }
 
   .config-sidebar-label {
@@ -1272,12 +1408,17 @@ a {
   }
 
   .config-sidebar-link {
+    flex: 0 0 44px;
     justify-content: center;
     padding: 0;
   }
 
   .baner-home-inicio {
-    height: clamp(360px, 95vw, 560px);
+    height: clamp(260px, 62vw, 460px);
+  }
+
+  .baner-home-inicio .carousel-item img {
+    object-fit: contain;
   }
 
   .banner-title {
@@ -1298,7 +1439,179 @@ a {
     min-width: 100%;
   }
 
+  .config-search,
+  .input-icon {
+    width: 100%;
+  }
+
   .config-create-btn {
     width: 100% !important;
+  }
+
+  .main-navbar .container {
+    max-width: 100%;
+  }
+
+  .main-brand img {
+    width: 132px;
+    height: auto;
+  }
+
+  .nav-login,
+  .nav-login .login-button-nav {
+    width: 100% !important;
+  }
+
+  .nav-login {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .form-login {
+    padding: 1rem;
+  }
+
+  .container-login {
+    min-height: calc(100vh - 72px);
+    height: auto;
+    padding: 1rem;
+  }
+
+  .modal-pedido .modal-header,
+  .modal-pedido .modal-body,
+  .modal-pedido .modal-footer {
+    padding: 1rem;
+  }
+
+  .modal-pedido .modal-title {
+    font-size: 1.2rem;
+  }
+
+  .modal-pedido .modal-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .modal-pedido .modal-footer .btn {
+    width: 100%;
+  }
+
+  .pedido-modal-header-grid,
+  .pedido-modal-client-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pedido-modal-status-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pedido-modal-status-form > div {
+    min-width: 100%;
+  }
+
+  .pedido-layout {
+    row-gap: 1rem;
+  }
+
+  .pedido-summary-card {
+    margin-top: 0.5rem;
+  }
+
+  .pedido-summary-item {
+    flex-direction: column;
+  }
+
+  .pedido-summary-item span,
+  .pedido-summary-item strong,
+  .pedido-summary-item h5 {
+    text-align: left;
+  }
+
+  .total-display-led {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .banner-config-page {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+  }
+
+  .banner-config-page h1 {
+    font-size: 1.55rem;
+  }
+
+  .category-publish-controls,
+  .category-publish-controls .form-select,
+  .category-publish-controls .btn {
+    width: 100%;
+  }
+
+  .cart-actions {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .cart-actions .btn {
+    width: 100%;
+  }
+
+  .config-page-main .container > .d-flex.justify-content-between.align-items-center,
+  .config-page-main .container > .d-flex.align-items-center {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .footer-social-link {
+    display: inline-flex;
+    margin-bottom: 0.35rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 991.98px) {
+  .baner-home-inicio {
+    height: clamp(360px, 58vw, 620px);
+  }
+
+  .baner-home-inicio .carousel-item img {
+    object-fit: contain;
+  }
+
+  .config-page-main.sidebar-open {
+    margin-left: 240px;
+  }
+
+  .config-sidebar.is-open {
+    width: 240px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .productos_header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .product-card-image {
+    height: 220px;
+  }
+
+  .section-valor-home,
+  .section-categorias-home,
+  .section-lo-ultimo-home,
+  .section-testimonios-home {
+    padding: 2.5rem 0;
+  }
+
+  .titulo-home-inicio {
+    font-size: 1.65rem;
+    margin: 1.75rem 0 1.25rem;
   }
 }

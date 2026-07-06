@@ -38,13 +38,12 @@ const DetallesPedido = () => {
       return acc + cantidad * precio;
     }, 0);
   }, [productos]);
-  const costoEnvio = productos.length ? 15000 : 0;
   const totalOrden = Number(orden?.total) || 0;
-  const totalCliente = useMemo(() => {
-    const incluyeEnvio =
-      Math.abs(totalOrden - subtotalProductos - costoEnvio) < 1;
-    return incluyeEnvio ? totalOrden : totalOrden + costoEnvio;
-  }, [totalOrden, subtotalProductos, costoEnvio]);
+  const costoEnvio = useMemo(() => {
+    if (!productos.length) return 0;
+    return Math.max(0, totalOrden - subtotalProductos);
+  }, [productos.length, subtotalProductos, totalOrden]);
+  const totalCliente = totalOrden;
 
   const estadoLabel = useMemo(() => {
     const estado = String(orden?.estadoPago || "");

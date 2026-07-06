@@ -333,5 +333,15 @@ export const SYNC_WOMPI_TRANSACTION = gql`
   }
 `;
 
+export const UPDATE_CONFIGURACION_TIENDA = gql`
+  mutation UpdateConfiguracionTienda($costoEnvio: Int!) {
+    updateConfiguracionTienda(costoEnvio: $costoEnvio) {
+      id
+      costoEnvio
+      updatedAt
+    }
+  }
+`;
+
 
 

@@ -13,18 +13,30 @@ const toNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const normalizeKartProductPricing = (producto) => {
+  const fallbackDetalPrice = toNumber(producto?.precio);
+  const detalPrice = Number(producto?.precioDetal);
+  const wholesalePrice = Number(producto?.precioMayorista);
+
+  return {
+    ...producto,
+    precioDetal: Number.isFinite(detalPrice) && detalPrice > 0 ? detalPrice : fallbackDetalPrice,
+    precioMayorista:
+      Number.isFinite(wholesalePrice) && wholesalePrice > 0 ? wholesalePrice : null,
+  };
+};
+
 const resolveKartProductPrice = (producto, priceMode) => {
+  const normalizedProduct = normalizeKartProductPricing(producto);
   const resolvedPrice = getVariationPriceByMode(
     {
-      precio: producto?.precioDetal ?? producto?.precio,
-      precioMayorista: producto?.precioMayorista,
+      precio: normalizedProduct.precioDetal,
+      precioMayorista: normalizedProduct.precioMayorista,
     },
     priceMode,
   );
 
-  return Number.isFinite(resolvedPrice)
-    ? resolvedPrice
-    : toNumber(producto?.precio);
+  return Number.isFinite(resolvedPrice) ? resolvedPrice : normalizedProduct.precioDetal;
 };
 
 export function useKartProductos() {
@@ -34,26 +46,41 @@ export function useKartProductos() {
 
   const safeKartProductos = Array.isArray(kartProductos) ? kartProductos : [];
   const resolvedKartProductos = useMemo(() => {
-    return safeKartProductos.map((producto) => ({
-      ...producto,
-      precio: resolveKartProductPrice(producto, priceMode),
-    }));
+    return safeKartProductos.map((producto) => {
+      const normalizedProduct = normalizeKartProductPricing(producto);
+
+      return {
+        ...normalizedProduct,
+        precio: resolveKartProductPrice(normalizedProduct, priceMode),
+      };
+    });
   }, [safeKartProductos, priceMode]);
 
   useEffect(() => {
     if (!safeKartProductos.length) return;
 
     const shouldSyncPrices = safeKartProductos.some((producto) => {
-      return toNumber(producto?.precio) !== resolveKartProductPrice(producto, priceMode);
+      const normalizedProduct = normalizeKartProductPricing(producto);
+
+      return (
+        toNumber(normalizedProduct?.precio) !==
+          resolveKartProductPrice(normalizedProduct, priceMode) ||
+        toNumber(producto?.precioDetal) !== normalizedProduct.precioDetal ||
+        toNumber(producto?.precioMayorista) !== toNumber(normalizedProduct.precioMayorista)
+      );
     });
 
     if (!shouldSyncPrices) return;
 
     setKartProductos(
-      safeKartProductos.map((producto) => ({
-        ...producto,
-        precio: resolveKartProductPrice(producto, priceMode),
-      })),
+      safeKartProductos.map((producto) => {
+        const normalizedProduct = normalizeKartProductPricing(producto);
+
+        return {
+          ...normalizedProduct,
+          precio: resolveKartProductPrice(normalizedProduct, priceMode),
+        };
+      }),
     );
   }, [priceMode, safeKartProductos, setKartProductos]);
 
@@ -80,29 +107,31 @@ export function useKartProductos() {
     (newProduct) => {
       if (!newProduct) return;
       const nextProducts = [...safeKartProductos];
+      const normalizedNewProduct = normalizeKartProductPricing(newProduct);
 
       const existingIndex = nextProducts.findIndex((product) => {
-        if (product?.variationId && newProduct?.variationId) {
-          return Number(product.variationId) === Number(newProduct.variationId);
+        if (product?.variationId && normalizedNewProduct?.variationId) {
+          return Number(product.variationId) === Number(normalizedNewProduct.variationId);
         }
         return (
-          Number(product?.id) === Number(newProduct?.id) &&
-          Number(product?.colorId) === Number(newProduct?.colorId) &&
-          Number(product?.tallaId) === Number(newProduct?.tallaId)
+          Number(product?.id) === Number(normalizedNewProduct?.id) &&
+          Number(product?.colorId) === Number(normalizedNewProduct?.colorId) &&
+          Number(product?.tallaId) === Number(normalizedNewProduct?.tallaId)
         );
       });
 
       if (existingIndex >= 0) {
         const current = nextProducts[existingIndex];
         const mergedQuantity =
-          toNumber(current?.cantidad) + toNumber(newProduct?.cantidad);
+          toNumber(current?.cantidad) + toNumber(normalizedNewProduct?.cantidad);
         nextProducts[existingIndex] = {
           ...current,
-          ...newProduct,
+          ...normalizeKartProductPricing(current),
+          ...normalizedNewProduct,
           cantidad: mergedQuantity,
         };
       } else {
-        nextProducts.push({ ...newProduct });
+        nextProducts.push({ ...normalizedNewProduct });
       }
 
       setKartProductos(nextProducts);

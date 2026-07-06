@@ -88,6 +88,16 @@ export const GET_CATEGORIA_MENU_IMAGENES_ACTIVAS = gql`
   }
 `;
 
+export const GET_CONFIGURACION_TIENDA = gql`
+  query GetConfiguracionTienda {
+    configuracionTienda {
+      id
+      costoEnvio
+      updatedAt
+    }
+  }
+`;
+
 // ACTUALIZADO: Query para obtener productos con la nueva estructura de SKUs
 export const GET_PRODUCTOS = gql`
   query GetProducts($where: JSON) {

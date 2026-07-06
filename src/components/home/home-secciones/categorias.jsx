@@ -18,7 +18,7 @@ const CategoryGrid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 991.98px) {
     grid-template-columns: 1fr;
   }
 `;

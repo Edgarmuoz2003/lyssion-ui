@@ -127,8 +127,8 @@ const Carrito = () => {
               </tr>
             </tfoot>
           </Table>
-          <Row className="mt-4 justify-content-end">
-            <Col md="auto">
+          <Row className="mt-4 justify-content-end cart-actions-row">
+            <Col md="auto" className="cart-actions">
               <Button
                 variant="secondary"
                 onClick={() => navigate(-1)}

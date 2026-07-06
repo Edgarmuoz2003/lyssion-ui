@@ -16,6 +16,7 @@ import { Tabs } from "antd";
 import SpinnerComponet from "@/layouts/spinnerComponent";
 import { useOrdenesStore } from "../utils/hooks/useOrdenesStore";
 import { useKartProductos } from "../utils/hooks/useKartProductos";
+import { useConfiguracionTienda } from "../utils/hooks/useConfiguracionTienda";
 import { formatPrice } from "../utils/helpers";
 import { DivContainer } from "@/utils/styledComponents";
 import { useNavigate } from "react-router-dom";
@@ -98,6 +99,7 @@ const Pedido = () => {
     clearKart,
     hasProducts,
   } = useKartProductos();
+  const { configuracionTienda } = useConfiguracionTienda();
   const {
     clientes: clientesEncontrados,
     loadingClientes,
@@ -157,7 +159,12 @@ const Pedido = () => {
   }));
 
   const subtotal = totalProductos;
-  const costoEnvio = hasProducts ? 15000 : 0;
+  const costoEnvioConfigurado = Number(configuracionTienda?.costoEnvio);
+  const costoEnvio = hasProducts
+    ? Number.isFinite(costoEnvioConfigurado)
+      ? costoEnvioConfigurado
+      : 15000
+    : 0;
   const totalAPagar = hasProducts ? subtotal + costoEnvio : 0;
   const totalInterno = totalAPagar;
 
@@ -374,7 +381,7 @@ const Pedido = () => {
         numeroOrden: nuevaOrden?.numeroOrden ?? null,
         metodoPago,
         total: nuevaOrden?.total ?? totalInterno,
-        totalCliente: totalAPagar,
+        totalCliente: nuevaOrden?.total ?? totalAPagar,
       };
       setOrdenCreada(nuevaOrdenCreada);
       setSubmited(false);
@@ -514,7 +521,7 @@ const Pedido = () => {
     <>
       <Container>
         <h1>Realizar pedido</h1>
-        <Row className="mt-4">
+        <Row className="mt-4 pedido-layout">
           <Col md={8}>
             <Tabs
               activeKey={activeTab}
@@ -855,8 +862,8 @@ const Pedido = () => {
                       </div>
 
                       <div className="d-grid gap-2 mt-4">
-                        <Row>
-                          <Col>
+                        <Row className="g-2">
+                          <Col xs={12} md={6}>
                             <Button
                               variant="primary"
                               size="lg"
@@ -867,7 +874,7 @@ const Pedido = () => {
                               {creandoOrden ? "Procesando..." : "Pagar Ahora"}
                             </Button>
                           </Col>
-                          <Col>
+                          <Col xs={12} md={6}>
                             <Button
                               variant="success"
                               size="lg"
@@ -897,7 +904,7 @@ const Pedido = () => {
             />
           </Col>
           <Col md={4}>
-            <Card>
+            <Card className="pedido-summary-card">
               <Card.Header as="h5">Resumen de tu pedido</Card.Header>
               <Card.Body>
                 <ListGroup variant="flush">
@@ -906,7 +913,7 @@ const Pedido = () => {
                       {kartProductos.map((item, index) => (
                         <ListGroup.Item
                           key={`${item.id}-${index}`}
-                          className="d-flex justify-content-between align-items-center"
+                          className="pedido-summary-item"
                         >
                           <div>
                             {item.nombre} ({item.cantidad})
@@ -918,16 +925,16 @@ const Pedido = () => {
                           <span>{formatPrice(item.precio * item.cantidad)}</span>
                         </ListGroup.Item>
                       ))}
-                      <ListGroup.Item className="d-flex justify-content-between">
+                      <ListGroup.Item className="pedido-summary-item">
                         <span>Subtotal</span>
                         <strong>{formatPrice(subtotal)}</strong>
                       </ListGroup.Item>
-                      <ListGroup.Item className="d-flex justify-content-between">
+                      <ListGroup.Item className="pedido-summary-item">
                         <span>Envio</span>
                         <strong>{formatPrice(costoEnvio)}</strong>
                       </ListGroup.Item>
                       <ListGroup.Item
-                        className="d-flex justify-content-between"
+                        className="pedido-summary-item pedido-summary-total"
                         style={{ backgroundColor: "#f0f0f0" }}
                       >
                         <h5>Total a Pagar</h5>

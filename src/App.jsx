@@ -30,6 +30,7 @@ const Carrito = lazy(() => import("./components/carrito"));
 const Pedido = lazy(() => import("./components/pedido"));
 const Nosotros = lazy(() => import("./components/nosotros"));
 const Configuraciones = lazy(() => import("./components/configuraciones"));
+const CostoEnvio = lazy(() => import("./components/configuracion/costoEnvio"));
 const PreciosProductos = lazy(() =>
   import("./components/configuracion/preciosProductos")
 );
@@ -47,6 +48,7 @@ const DetallesPedido = lazy(() => import("./components/detallesPedido"));
 
 const configPaths = new Set([
   "/Configuraciones",
+  "/CostoEnvio",
   "/PreciosProductos",
   "/Colores",
   "/Tallas",
@@ -67,7 +69,7 @@ const AppContent = () => {
   }, []);
 
   return (
-    <>
+    <div className="app-shell">
       <Header />
       <KartButton />
       <WhatsappButton />
@@ -79,8 +81,8 @@ const AppContent = () => {
       <main
         className={
           isConfigRoute
-            ? `config-page-main ${isConfigMenuOpen ? "sidebar-open" : "sidebar-collapsed"}`
-            : undefined
+            ? `app-main config-page-main ${isConfigMenuOpen ? "sidebar-open" : "sidebar-collapsed"}`
+            : "app-main"
         }
       >
         <Suspense
@@ -116,6 +118,14 @@ const AppContent = () => {
               element={
                 <PrivateRoute>
                   <PreciosProductos />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/CostoEnvio"
+              element={
+                <PrivateRoute>
+                  <CostoEnvio />
                 </PrivateRoute>
               }
             />
@@ -180,7 +190,7 @@ const AppContent = () => {
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 };
 

@@ -168,44 +168,46 @@ const PedidosList = () => {
         )}
 
         {!loadingOrdenes && !errorOrdenes && (
-          <table className="table table-striped">
-            <thead>
-              <tr>
-                <th>Acciones</th>
-                <th>Fecha</th>
-                <th>Orden Numero</th>
-                <th>Cliente</th>
-                <th>Estado</th>
-                <th>Estado de pago</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ordenesOrdenadas.map((orden) => (
-                <tr key={orden.id} className="pedidos-list-class">
-                  <td>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleDelete(orden.id)}
-                      disabled={eliminandoOrden}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </td>
-                  <td>{formatFecha(orden.fecha)}</td>
-                  <td
-                    onClick={() => handleShow(orden)}
-                    className="pedidos-number-class"
-                  >
-                    {orden.numeroOrden}
-                  </td>
-                  <td>{formatNombre(orden.cliente)}</td>
-                  <td>{renderEstado(orden.estado)}</td>
-                  <td>{renderEstadoPago(orden.estadoPago)}</td>
+          <div className="pedidos-table-wrap">
+            <table className="table table-striped">
+              <thead>
+                <tr>
+                  <th>Acciones</th>
+                  <th>Fecha</th>
+                  <th>Orden Numero</th>
+                  <th>Cliente</th>
+                  <th>Estado</th>
+                  <th>Estado de pago</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {ordenesOrdenadas.map((orden) => (
+                  <tr key={orden.id} className="pedidos-list-class">
+                    <td>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(orden.id)}
+                        disabled={eliminandoOrden}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </td>
+                    <td>{formatFecha(orden.fecha)}</td>
+                    <td
+                      onClick={() => handleShow(orden)}
+                      className="pedidos-number-class"
+                    >
+                      {orden.numeroOrden}
+                    </td>
+                    <td>{formatNombre(orden.cliente)}</td>
+                    <td>{renderEstado(orden.estado)}</td>
+                    <td>{renderEstadoPago(orden.estadoPago)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Container>
       <PedidoView

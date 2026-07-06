@@ -73,6 +73,18 @@ const PedidoView = ({ show, setShow, orden, onOrdenUpdated }) => {
   const productosNormalizados = useMemo(() => {
     return normalizeOrdenProductos(orden, { variacionesMap });
   }, [orden, variacionesMap]);
+  const subtotalProductos = useMemo(() => {
+    return productosNormalizados.reduce((acc, prod) => {
+      const cantidad = Number(prod.cantidad) || 0;
+      const precioUnitario = Number(prod.precioUnitario) || 0;
+      return acc + cantidad * precioUnitario;
+    }, 0);
+  }, [productosNormalizados]);
+  const costoEnvio = useMemo(() => {
+    const totalOrden = Number(orden?.total) || 0;
+    if (!productosNormalizados.length) return 0;
+    return Math.max(0, totalOrden - subtotalProductos);
+  }, [orden?.total, productosNormalizados.length, subtotalProductos]);
 
   const estadoPagoLabel = useMemo(() => {
     const estado = String(orden?.estadoPago || "").toLowerCase();
@@ -105,11 +117,11 @@ const PedidoView = ({ show, setShow, orden, onOrdenUpdated }) => {
         <Modal.Body>
           {orden ? (
             <>
-              <div className="d-flex justify-content-between">
+              <div className="pedido-modal-header-grid">
                 <p>
                   <strong>Orden Nro</strong> {orden.numeroOrden}
                 </p>
-                <Form className="d-flex">
+                <Form className="pedido-modal-status-form">
                   <Form.Label>Estado: </Form.Label>
                   <Select
                     options={estadoOptions}
@@ -125,8 +137,8 @@ const PedidoView = ({ show, setShow, orden, onOrdenUpdated }) => {
                 </p>
               </div>
               <h4>Datos del cliente</h4>
-              <div className="d-flex">
-                <div className="flex-column w-50 ms-3">
+              <div className="pedido-modal-client-grid">
+                <div>
                   <p className="mb-1">
                     <strong>Estado de pago:</strong> {estadoPagoLabel}
                   </p>
@@ -141,7 +153,7 @@ const PedidoView = ({ show, setShow, orden, onOrdenUpdated }) => {
                     <strong>Email:</strong> {orden.cliente.email}
                   </p>
                 </div>
-                <div className="flex-column w-50 ms-3">
+                <div>
                   <p className="mb-1">
                     <strong>Teléfono:</strong> {orden.cliente.telefono}
                   </p>
@@ -157,33 +169,53 @@ const PedidoView = ({ show, setShow, orden, onOrdenUpdated }) => {
               <br />
               <hr />
               <h4>Productos</h4>
-              <table className="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Cantidad</th>
-                    <th>Precio unitario</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {productosNormalizados.map((prod) => (
-                    <tr key={prod.id}>
-                      <td>
-                        {prod.nombre} talla {prod.talla} color {prod.color}
-                      </td>
-                      <td>{prod.cantidad}</td>
-                      <td>${Number(prod.precioUnitario).toLocaleString()}</td>
-                      <td>
-                        $
-                        {Number(prod.precioUnitario * prod.cantidad).toLocaleString()}
-                      </td>
+              <div className="table-responsive-safe">
+                <table className="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Cantidad</th>
+                      <th>Precio unitario</th>
+                      <th>Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {productosNormalizados.map((prod) => (
+                      <tr key={prod.id}>
+                        <td>
+                          {prod.nombre} talla {prod.talla} color {prod.color}
+                        </td>
+                        <td>{prod.cantidad}</td>
+                        <td>${Number(prod.precioUnitario).toLocaleString()}</td>
+                        <td>
+                          $
+                          {Number(prod.precioUnitario * prod.cantidad).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <div className="d-flex justify-content-end">
                 <div>
+                  <p className="text-end mb-1">
+                    <strong>Subtotal productos:</strong>{" "}
+                    {Number(subtotalProductos).toLocaleString("es-CO", {
+                      style: "currency",
+                      currency: "COP",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
+                  <p className="text-end mb-2">
+                    <strong>Envio cobrado:</strong>{" "}
+                    {Number(costoEnvio).toLocaleString("es-CO", {
+                      style: "currency",
+                      currency: "COP",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
                   <h5 className="text-end me-2">Total del Pedido</h5>
                   <div className="total-display-led">
                     {Number(orden.total).toLocaleString("es-CO", {
