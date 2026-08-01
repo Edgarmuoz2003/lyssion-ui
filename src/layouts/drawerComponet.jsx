@@ -9,6 +9,7 @@ import {
   FaImages,
   FaTruck,
   FaUsers,
+  FaWhatsapp,
 } from "react-icons/fa";
 
 const menuItems = [
@@ -16,15 +17,20 @@ const menuItems = [
   { path: "/CostoEnvio", label: "Costo de envio", icon: <FaTruck /> },
   { path: "/Colores", label: "Colores", icon: <HiColorSwatch /> },
   { path: "/Tallas", label: "Tallas", icon: <TbRulerMeasure /> },
-  { path: "/Categorias", label: "Categorías", icon: <MdCategory /> },
+  { path: "/Categorias", label: "Categorias", icon: <MdCategory /> },
   { path: "/Banners", label: "Banners", icon: <FaImages /> },
   {
     path: "/ImagenesCategorias",
-    label: "Imágenes de categorías",
+    label: "Imagenes de categorias",
     icon: <FaImages />,
   },
   { path: "/Usuarios", label: "Usuarios", icon: <FaUsers /> },
-  { path: "/PedidosList", label: "Órdenes de pedido", icon: <FaClipboardList /> },
+  { path: "/PedidosList", label: "Ordenes de pedido", icon: <FaClipboardList /> },
+  {
+    path: "/admin/conversaciones",
+    label: "Conversaciones",
+    icon: <FaWhatsapp />,
+  },
 ];
 
 const DrawerComponent = ({ open, onToggle }) => {
@@ -34,12 +40,12 @@ const DrawerComponent = ({ open, onToggle }) => {
         type="button"
         className="config-sidebar-toggle"
         onClick={onToggle}
-        aria-label={open ? "Recoger menú" : "Abrir menú"}
+        aria-label={open ? "Recoger menu" : "Abrir menu"}
       >
         <FaBars />
       </button>
 
-      <nav className="config-sidebar-nav" aria-label="Opciones de configuración">
+      <nav className="config-sidebar-nav" aria-label="Opciones de configuracion">
         {menuItems.map((item) => (
           <NavLink
             key={item.path}

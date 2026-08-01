@@ -45,6 +45,9 @@ const Usuarios = lazy(() => import("./components/usuarios"));
 const PedidosList = lazy(() => import("./components/pedidosList"));
 const PoliticaDeDatos = lazy(() => import("./components/PoliticaDeDatos"));
 const DetallesPedido = lazy(() => import("./components/detallesPedido"));
+const WhatsappInboxPage = lazy(() =>
+  import("./components/whatsapp/WhatsappInboxPage")
+);
 
 const configPaths = new Set([
   "/Configuraciones",
@@ -57,6 +60,7 @@ const configPaths = new Set([
   "/ImagenesCategorias",
   "/Usuarios",
   "/PedidosList",
+  "/admin/conversaciones",
 ]);
 
 const AppContent = () => {
@@ -182,6 +186,14 @@ const AppContent = () => {
               element={
                 <PrivateRoute>
                   <PedidosList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/conversaciones"
+              element={
+                <PrivateRoute>
+                  <WhatsappInboxPage />
                 </PrivateRoute>
               }
             />
